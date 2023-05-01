@@ -1,9 +1,14 @@
 import { Injectable } from '@nestjs/common';
 import { CreateRoomDto } from './dto/create-room.dto';
 import { UpdateRoomDto } from './dto/update-room.dto';
+import { Model } from 'mongoose';
+import { InjectModel } from '@nestjs/mongoose';
+import { Room } from './schemas/room.schema';
 
 @Injectable()
 export class RoomsService {
+  constructor(@InjectModel(Room.name) private userModel: Model<Room>) {}
+
   create(createRoomDto: CreateRoomDto) {
     return 'This action adds a new room';
   }
