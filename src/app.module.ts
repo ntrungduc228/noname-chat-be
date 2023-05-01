@@ -13,9 +13,9 @@ import { CallModule } from './call/call.module';
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
     MongooseModule.forRoot(process.env.DB_URI),
+    AuthModule,
     UsersModule,
     MessagesModule,
-    AuthModule,
     RoomsModule,
     CallModule,
   ],

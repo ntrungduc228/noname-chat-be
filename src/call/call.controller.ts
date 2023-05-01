@@ -10,7 +10,7 @@ import {
 import { CallService } from './call.service';
 import { CreateCallDto } from './dto/create-call.dto';
 
-@Controller('call')
+@Controller('api/call')
 export class CallController {
   constructor(private readonly callService: CallService) {}
 
