@@ -23,6 +23,12 @@ export class Message {
   })
   seenders: User[];
 
+  @Prop({
+    type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
+    default: [],
+  })
+  usersDelete: User[];
+
   @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'User' })
   sender: User;
 

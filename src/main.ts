@@ -1,25 +1,37 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import { RequestMethod } from '@nestjs/common';
+import * as session from 'express-session';
+import * as passport from 'passport';
+import * as compression from 'compression';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-  // app.setGlobalPrefix('api', { exclude: ['cats'] });
   // app.setGlobalPrefix('api');
-  // app.setGlobalPrefix('api', {
-  //   exclude: [
-  //     'auth',
-  //     'messages',
-  //     {
-  //       path: 'call',
-  //       method: RequestMethod.ALL,
-  //     },
-  //   ],
-  // });
+
+  app.use(
+    session({
+      secret: process.env.SESSION_SECRET,
+      resave: false,
+      saveUninitialized: false,
+      cookie: {
+        maxAge: 60000,
+      },
+    }),
+  );
+
+  app.use(
+    compression({
+      threshold: 100 * 1000,
+    }),
+  );
+
   app.enableCors({
     origin: process.env.CLIENT_URI,
   });
-  await app.listen(process.env.PORT || 5000);
+  app.use(passport.initialize());
+  app.use(passport.session());
+
+  await app.listen(process.env.PORT || 4000);
   console.log(`Application is running on: ${await app.getUrl()}`);
 }
 bootstrap();
