@@ -1,8 +1,9 @@
-import { Controller, Get, Req, UseGuards, Request } from '@nestjs/common';
+import { Controller, Get, Req, UseGuards, Res, Redirect } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { AuthGuard } from '@nestjs/passport';
+import { AccessTokenGuard } from './guards';
 
-@Controller('auth')
+@Controller('api/auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
@@ -12,12 +13,16 @@ export class AuthController {
 
   @Get('google/redirect')
   @UseGuards(AuthGuard('google'))
-  googleAuthRedirect(@Req() req) {
-    return this.authService.googleLogin(req);
+  @Redirect()
+  async googleAuthRedirect(@Req() req, @Res() res) {
+    const { jwt } = await this.authService.googleLogin(req);
+    return { url: `https://www.youtube.com?token=${jwt}` };
   }
 
   @Get('profile')
-  getProfile(@Request() req) {
-    return req.user;
+  @UseGuards(AccessTokenGuard)
+  getProfile(@Req() req) {
+    console.log('hi, ', req.user);
+    return { user: req.user, message: 'ok' };
   }
 }
