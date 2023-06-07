@@ -9,6 +9,7 @@ import { AuthModule } from './auth/auth.module';
 import { RoomsModule } from './rooms/rooms.module';
 import { CallModule } from './call/call.module';
 import { PassportModule } from '@nestjs/passport';
+import { EventsGateway } from './events/events.gateway';
 
 @Module({
   imports: [
@@ -22,6 +23,6 @@ import { PassportModule } from '@nestjs/passport';
     PassportModule.register({ session: true }),
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [AppService, EventsGateway],
 })
 export class AppModule {}

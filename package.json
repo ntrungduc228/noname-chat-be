@@ -28,6 +28,8 @@
     "@nestjs/mongoose": "^9.2.2",
     "@nestjs/passport": "^9.0.3",
     "@nestjs/platform-express": "^9.0.0",
+    "@nestjs/platform-socket.io": "^9.4.2",
+    "@nestjs/websockets": "^9.4.2",
     "compression": "^1.7.4",
     "express-session": "^1.17.3",
     "mongoose": "^7.1.0",

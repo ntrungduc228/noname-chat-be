@@ -15,8 +15,8 @@ export class AuthController {
   @UseGuards(AuthGuard('google'))
   @Redirect()
   async googleAuthRedirect(@Req() req, @Res() res) {
-    const { jwt } = await this.authService.googleLogin(req);
-    return { url: `https://www.youtube.com?token=${jwt}` };
+    const { token } = await this.authService.googleLogin(req);
+    return { url: `http://localhost:3000/redirect?token=${token}` };
   }
 
   @Get('profile')
