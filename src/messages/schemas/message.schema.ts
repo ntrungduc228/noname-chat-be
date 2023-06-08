@@ -9,7 +9,6 @@ export enum MessageType {
   TEXT = 'TEXT',
   FILE = 'FILE',
   IMAGE = 'IMAGE',
-  VIDEO = 'VIDEO',
   CALL = 'CALL',
 }
 
@@ -40,6 +39,8 @@ export class Message {
 
   @Prop({ type: String })
   type: MessageType;
+  @Prop({ type: Array, default: [] })
+  images: string[];
 }
 
 export const MessageSchema = SchemaFactory.createForClass(Message);
