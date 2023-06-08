@@ -18,4 +18,8 @@ export class MessagesService {
   async remove(id: string) {
     return await this.messageModel.findByIdAndDelete(id);
   }
+
+  async findByRoomId(roomId: string) {
+    return await this.messageModel.find({ room: roomId });
+  }
 }

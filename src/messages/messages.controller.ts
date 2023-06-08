@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Param, Post } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post } from '@nestjs/common';
 import { CreateMessageDto } from './dto/create-message.dto';
 import { MessagesService } from './messages.service';
 
@@ -15,5 +15,10 @@ export class MessagesController {
   async remove(@Param('id') id: string) {
     await this.messagesService.remove(id);
     return 'success';
+  }
+
+  @Get(':roomId')
+  async get(@Param('roomId') roomId: string) {
+    return await this.messagesService.findByRoomId(roomId);
   }
 }
