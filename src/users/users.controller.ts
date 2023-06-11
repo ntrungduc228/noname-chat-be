@@ -6,6 +6,7 @@ import {
   Patch,
   Param,
   Delete,
+  Req,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -23,6 +24,15 @@ export class UsersController {
   @Get()
   async findAll() {
     return this.usersService.findAll();
+  }
+
+  @Get('/search')
+  async search(@Req() req) {
+    const { q } = req.query;
+    const users = await this.usersService.findByUsername(q);
+    return {
+      data: users,
+    };
   }
 
   //   @Get(':id')

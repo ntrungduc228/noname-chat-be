@@ -23,6 +23,7 @@ export const ProviderSchema = SchemaFactory.createForClass(Provider);
   timestamps: true,
 })
 export class User {
+  _id: mongoose.Schema.Types.ObjectId;
   @Prop({ type: String })
   username: string;
 
@@ -30,7 +31,7 @@ export class User {
   email: string;
 
   @Prop({ type: String })
-  passsword: string;
+  password: string;
 
   @Prop({ type: String })
   avatar: string;
