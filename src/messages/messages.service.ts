@@ -27,7 +27,7 @@ export class MessagesService {
     callId: ObjectId;
   }): Promise<Message> {
     const createMessage = new this.messageModel({
-      roomId,
+      room: roomId,
       sender: senderId,
       call: callId,
       type: MessageType.CALL,
@@ -100,6 +100,7 @@ export class MessagesService {
             },
             {
               path: 'room',
+              select: 'name participants avatar isGroup',
               populate: {
                 path: 'participants',
                 select: 'username avatar email',
@@ -117,7 +118,7 @@ export class MessagesService {
     return await this.messageModel
       .find({
         type,
-        roomId: rooms.map((room) => room._id),
+        room: rooms.map((room) => room._id),
       })
       .populate(populates);
   }

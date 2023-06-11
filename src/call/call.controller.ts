@@ -19,8 +19,14 @@ export class CallController {
 
   @Post()
   @UseGuards(AccessTokenGuard)
-  create(@Body() createCallDto: CreateCallDto, @Req() req: { user: any }) {
-    return this.callService.create(createCallDto, req.user.id);
+  async create(
+    @Body() createCallDto: CreateCallDto,
+    @Req() req: { user: any },
+  ) {
+    const call = await this.callService.create(createCallDto, req.user.id);
+    return {
+      data: call,
+    };
   }
 
   @Get()

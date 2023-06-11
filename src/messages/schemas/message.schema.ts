@@ -36,9 +36,6 @@ export class Message {
   @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'Room' })
   room: Room;
 
-  @Prop({ type: String, index: true })
-  roomId: string;
-
   @Prop({ type: String })
   content: string;
 

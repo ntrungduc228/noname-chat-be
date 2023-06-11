@@ -32,7 +32,7 @@ export class CallService {
     });
 
     const newCall = await createCall.save();
-    const newMessage = await this.messagesService.createCall({
+    await this.messagesService.createCall({
       roomId: room._id,
       senderId: caller._id,
       callId: newCall._id,
@@ -52,6 +52,7 @@ export class CallService {
       },
       {
         path: 'room',
+        select: 'name participants avatar isGroup',
         populate: {
           path: 'participants',
           select: 'username avatar email',
@@ -73,6 +74,7 @@ export class CallService {
         .populate('caller', 'username avatar email')
         .populate({
           path: 'room',
+          select: 'name participants avatar isGroup',
           populate: {
             path: 'participants',
             select: 'username avatar email',
