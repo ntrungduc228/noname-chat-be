@@ -18,18 +18,18 @@ export class MessagesService {
   }
 
   async createCall({
-    room,
-    sender,
-    call,
+    roomId,
+    senderId,
+    callId,
   }: {
-    room: ObjectId;
-    sender: ObjectId;
-    call: ObjectId;
+    roomId: ObjectId;
+    senderId: ObjectId;
+    callId: ObjectId;
   }): Promise<Message> {
     const createMessage = new this.messageModel({
-      room,
-      sender,
-      call,
+      roomId,
+      sender: senderId,
+      call: callId,
       type: MessageType.CALL,
     });
     return (await createMessage.save()).populate([
@@ -39,13 +39,27 @@ export class MessagesService {
       },
       {
         path: 'call',
-      },
-      {
-        path: 'room',
-        populate: {
-          path: 'participants',
-          select: 'name avatar',
-        },
+        populate: [
+          {
+            path: 'caller',
+            select: 'username avatar email',
+          },
+          {
+            path: 'acceptedUsers',
+            select: 'username avatar email',
+          },
+          {
+            path: 'rejectedUsers',
+            select: 'username avatar email',
+          },
+          {
+            path: 'room',
+            populate: {
+              path: 'participants',
+              select: 'username avatar email',
+            },
+          },
+        ],
       },
     ]);
   }
@@ -66,13 +80,6 @@ export class MessagesService {
         path: 'sender',
         select: 'username avatar email',
       },
-      {
-        path: 'room',
-        populate: {
-          path: 'participants',
-          select: 'username avatar email',
-        },
-      },
     ];
     switch (type) {
       case MessageType.CALL:
@@ -91,6 +98,13 @@ export class MessagesService {
               path: 'rejectedUsers',
               select: 'username avatar email',
             },
+            {
+              path: 'room',
+              populate: {
+                path: 'participants',
+                select: 'username avatar email',
+              },
+            },
           ],
         });
         break;
@@ -103,7 +117,7 @@ export class MessagesService {
     return await this.messageModel
       .find({
         type,
-        room: rooms.map((room) => room._id),
+        roomId: rooms.map((room) => room._id),
       })
       .populate(populates);
   }

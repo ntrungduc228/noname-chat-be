@@ -33,19 +33,31 @@ export class CallService {
 
     const newCall = await createCall.save();
     const newMessage = await this.messagesService.createCall({
-      room: room._id as any,
-      sender: caller._id as any,
-      call: newCall._id as any,
+      roomId: room._id,
+      senderId: caller._id,
+      callId: newCall._id,
     });
-    await newCall.populate('acceptedUsers', 'username avatar email');
-    return {
-      ...newCall.toJSON(),
-      caller: caller,
-      room: {
-        ...room.toJSON(),
-        lastMessage: newMessage,
+    return await newCall.populate([
+      {
+        path: 'caller',
+        select: 'username avatar email',
       },
-    };
+      {
+        path: 'acceptedUsers',
+        select: 'username avatar email',
+      },
+      {
+        path: 'rejectedUsers',
+        select: 'username avatar email',
+      },
+      {
+        path: 'room',
+        populate: {
+          path: 'participants',
+          select: 'username avatar email',
+        },
+      },
+    ]);
   }
 
   findAll() {

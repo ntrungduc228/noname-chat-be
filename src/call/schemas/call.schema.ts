@@ -14,6 +14,7 @@ export enum CallStatus {
   timestamps: true,
 })
 export class Call {
+  _id: mongoose.Schema.Types.ObjectId;
   @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'User' })
   caller: User;
 

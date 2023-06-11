@@ -80,7 +80,10 @@ export class RoomsService {
     }
   }
 
-  async getByIdAndParticipantId(id: string | ObjectId, userId: string) {
+  async getByIdAndParticipantId(
+    id: string | ObjectId,
+    userId: string,
+  ): Promise<Room> {
     try {
       const room = this.roomModel
         .findOne({
