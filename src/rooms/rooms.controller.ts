@@ -6,28 +6,53 @@ import {
   Patch,
   Param,
   Delete,
+  UseGuards,
+  Req,
 } from '@nestjs/common';
 import { RoomsService } from './rooms.service';
 import { CreateRoomDto } from './dto/create-room.dto';
 import { UpdateRoomDto } from './dto/update-room.dto';
+import { AccessTokenGuard } from 'src/auth/guards';
 
 @Controller('api/rooms')
 export class RoomsController {
   constructor(private readonly roomsService: RoomsService) {}
 
   @Post()
-  create(@Body() createRoomDto: CreateRoomDto) {
-    return this.roomsService.create(createRoomDto);
+  @UseGuards(AccessTokenGuard)
+  async create(@Body() createRoomDto: CreateRoomDto, @Req() req) {
+    const room = await this.roomsService.create(createRoomDto, req.user.id);
+    return {
+      data: room,
+    };
   }
 
   @Get()
-  findAll() {
-    return this.roomsService.findAll();
+  @UseGuards(AccessTokenGuard)
+  async getCursorPaginated(@Req() req) {
+    const { limit, cursor } = req.query;
+    const user = req.user;
+    const { rooms, endCursor, hasNextPage } =
+      await this.roomsService.getCursorPaginated(+limit, cursor, user.id);
+    return {
+      data: rooms,
+      pageInfo: {
+        endCursor,
+        hasNextPage,
+      },
+    };
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.roomsService.findOne(+id);
+  @UseGuards(AccessTokenGuard)
+  async findOne(@Param('id') id: string, @Req() req) {
+    const room = await this.roomsService.getByIdAndParticipantId(
+      id,
+      req.user.id,
+    );
+    return {
+      data: room,
+    };
   }
 
   @Patch(':id')

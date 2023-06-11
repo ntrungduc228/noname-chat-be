@@ -1,5 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import mongoose, { HydratedDocument } from 'mongoose';
+
 import { Message } from 'src/messages/schemas/message.schema';
 import { User } from 'src/users/schemas/user.schema';
 
@@ -9,11 +10,12 @@ export type RoomDocument = HydratedDocument<Room>;
   timestamps: true,
 })
 export class Room {
+  _id: mongoose.Schema.Types.ObjectId;
   @Prop({
     type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
     default: [],
   })
-  participant: User[];
+  participants: User[];
 
   @Prop({ type: Boolean, default: false })
   isGroup: boolean;
@@ -29,6 +31,12 @@ export class Room {
 
   @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'Message' })
   lastMessage: Message;
+
+  @Prop({ type: Boolean, default: false })
+  isDeleted: boolean;
+
+  @Prop({ type: Date, default: Date.now })
+  newMessageAt: Date;
 }
 
 export const RoomSchema = SchemaFactory.createForClass(Room);
