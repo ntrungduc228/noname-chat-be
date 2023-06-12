@@ -1,15 +1,18 @@
-import { Module } from '@nestjs/common';
+import { AdminController } from './admin/admin.controller';
+import { AdminModule } from './admin/admin.module';
+import { AdminService } from './admin/admin.service';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { MongooseModule } from '@nestjs/mongoose';
-import { ConfigModule } from '@nestjs/config';
-import { UsersModule } from './users/users.module';
-import { MessagesModule } from './messages/messages.module';
 import { AuthModule } from './auth/auth.module';
-import { RoomsModule } from './rooms/rooms.module';
 import { CallModule } from './call/call.module';
-import { PassportModule } from '@nestjs/passport';
+import { ConfigModule } from '@nestjs/config';
 import { EventsGateway } from './events/events.gateway';
+import { MessagesModule } from './messages/messages.module';
+import { Module } from '@nestjs/common';
+import { MongooseModule } from '@nestjs/mongoose';
+import { PassportModule } from '@nestjs/passport';
+import { RoomsModule } from './rooms/rooms.module';
+import { UsersModule } from './users/users.module';
 
 @Module({
   imports: [
@@ -21,6 +24,7 @@ import { EventsGateway } from './events/events.gateway';
     RoomsModule,
     CallModule,
     PassportModule.register({ session: true }),
+    AdminModule,
   ],
   controllers: [AppController],
   providers: [AppService, EventsGateway],
