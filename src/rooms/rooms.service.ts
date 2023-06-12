@@ -4,6 +4,7 @@ import { Model, ObjectId } from 'mongoose';
 import { CreateRoomDto } from './dto/create-room.dto';
 import { UpdateRoomDto } from './dto/update-room.dto';
 import { Room } from './schemas/room.schema';
+import { generateAvatar } from 'src/utils/generate-avatar';
 
 @Injectable()
 export class RoomsService {
@@ -32,11 +33,18 @@ export class RoomsService {
             400,
           );
         }
+        if (!createRoomDto.name) {
+          throw new HttpException('Group must have a name', 400);
+        }
+        if (!createRoomDto.avatar) {
+          createRoomDto.avatar = generateAvatar(createRoomDto.name);
+        }
       } else {
         if (participants.length > 2) {
           throw new HttpException('Chat must have at most 2 participants', 400);
         }
         const existingRoom = await this.findByParticipants(participants);
+        console.log(existingRoom);
         if (existingRoom) {
           if (allowReturnExisting) {
             return existingRoom;
@@ -138,7 +146,7 @@ export class RoomsService {
 
   async findByParticipants(participants: ObjectId[]): Promise<Room> {
     return await this.roomModel.findOne({
-      participants: { $all: participants },
+      participants: participants,
     });
   }
 

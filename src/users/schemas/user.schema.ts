@@ -26,6 +26,8 @@ export class User {
   _id: mongoose.Schema.Types.ObjectId;
   @Prop({ type: String })
   username: string;
+  @Prop({ type: String })
+  bio: string;
 
   @Prop({ type: String })
   email: string;
