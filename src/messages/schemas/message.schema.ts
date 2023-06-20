@@ -1,5 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import mongoose, { HydratedDocument } from 'mongoose';
+
+import { Call } from 'src/call/schemas/call.schema';
 import { Room } from 'src/rooms/schemas/room.schema';
 import { User } from 'src/users/schemas/user.schema';
 
@@ -9,7 +11,6 @@ export enum MessageType {
   TEXT = 'TEXT',
   FILE = 'FILE',
   IMAGE = 'IMAGE',
-  VIDEO = 'VIDEO',
   CALL = 'CALL',
 }
 
@@ -38,11 +39,14 @@ export class Message {
   @Prop({ type: String })
   content: string;
 
-  @Prop({ type: String })
+  @Prop({ type: String, index: true })
   type: MessageType;
 
-  @Prop({ type: String, default: [] })
+  @Prop({ type: Array, default: [] })
   images: string[];
+
+  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'Call' })
+  call: Call;
 }
 
 export const MessageSchema = SchemaFactory.createForClass(Message);
