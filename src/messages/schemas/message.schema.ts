@@ -40,6 +40,9 @@ export class Message {
 
   @Prop({ type: String })
   type: MessageType;
+
+  @Prop({ type: String, default: [] })
+  images: string[];
 }
 
 export const MessageSchema = SchemaFactory.createForClass(Message);
