@@ -10,6 +10,7 @@ import { RoomsModule } from './rooms/rooms.module';
 import { CallModule } from './call/call.module';
 import { PassportModule } from '@nestjs/passport';
 import { EventsGateway } from './events/events.gateway';
+import { EventsModule } from './events/events.module';
 
 @Module({
   imports: [
@@ -21,6 +22,7 @@ import { EventsGateway } from './events/events.gateway';
     RoomsModule,
     CallModule,
     PassportModule.register({ session: true }),
+    EventsModule,
   ],
   controllers: [AppController],
   providers: [AppService, EventsGateway],

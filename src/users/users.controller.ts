@@ -13,14 +13,32 @@ import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { AccessTokenGuard } from 'src/auth/guards';
+import { EventsGateway } from 'src/events/events.gateway';
+import { EventsService } from 'src/events/events.service';
 
 @Controller('api/users')
 export class UsersController {
-  constructor(private readonly usersService: UsersService) {}
+  constructor(
+    private readonly usersService: UsersService,
+    private readonly eventGateway: EventsGateway,
+    private readonly eventService: EventsService,
+  ) {}
 
   @Post()
   async create(@Body() createUserDto: CreateUserDto) {
     return this.usersService.create(createUserDto);
+  }
+
+  @Get('/test')
+  async getSocket() {
+    // await this.eventGateway.server.emit('test-emit1', 'test tset');
+    // await this.eventService.socket.emit('test-emit1', 'teset se');
+    console.log('check http://api/users/test');
+    // await this.eventGateway.testUser();
+    // console.log('this ', this.eventGateway.server);
+    // this.eventGateway.handleMessage('hihi');
+    // await this.eventService.testUserser();
+    return { message: 'ok' };
   }
 
   @Get()

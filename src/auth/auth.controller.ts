@@ -2,10 +2,14 @@ import { Controller, Get, Req, UseGuards, Res, Redirect } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { AuthGuard } from '@nestjs/passport';
 import { AccessTokenGuard } from './guards';
+import { UsersService } from 'src/users/users.service';
 
 @Controller('api/auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(
+    private readonly authService: AuthService,
+    private readonly userService: UsersService,
+  ) {}
 
   @Get('google')
   @UseGuards(AuthGuard('google'))
@@ -19,10 +23,11 @@ export class AuthController {
     return { url: `http://localhost:3000/redirect?token=${token}` };
   }
 
-  @Get('profile')
+  @Get('info')
   @UseGuards(AccessTokenGuard)
-  getProfile(@Req() req) {
+  async getProfile(@Req() req) {
     console.log('hi, ', req.user);
-    return { user: req.user, message: 'ok' };
+    const user = await this.userService.getProfile(req.user.id);
+    return { user: user, message: 'ok' };
   }
 }
