@@ -20,7 +20,7 @@ import { UsersService } from 'src/users/users.service';
   ],
   controllers: [AuthController],
   providers: [
-    UsersService,
+    // UsersService,
     AuthService,
     GoogleStrategy,
     AccessTokenStrategy,

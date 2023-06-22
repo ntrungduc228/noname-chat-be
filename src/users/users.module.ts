@@ -14,7 +14,7 @@ import { EventsService } from 'src/events/events.service';
     EventsModule,
   ],
   controllers: [UsersController],
-  providers: [UsersService, EventsGateway, EventsService],
+  providers: [UsersService],
   exports: [UsersService],
 })
 export class UsersModule {}

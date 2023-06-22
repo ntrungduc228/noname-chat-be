@@ -11,7 +11,7 @@ import { CallModule } from './call/call.module';
 import { PassportModule } from '@nestjs/passport';
 import { EventsGateway } from './events/events.gateway';
 import { EventsModule } from './events/events.module';
-
+import { EventEmitterModule } from '@nestjs/event-emitter';
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
@@ -22,9 +22,10 @@ import { EventsModule } from './events/events.module';
     RoomsModule,
     CallModule,
     PassportModule.register({ session: true }),
+    EventEmitterModule.forRoot(),
     EventsModule,
   ],
   controllers: [AppController],
-  providers: [AppService, EventsGateway],
+  providers: [AppService],
 })
 export class AppModule {}

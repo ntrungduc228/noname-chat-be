@@ -9,9 +9,8 @@ import {
 } from '@nestjs/websockets';
 import { Server } from 'socket.io';
 import { EventsService } from './events.service';
-// @WebSocketGateway(8001, { cors: '*' })
+import { OnEvent } from '@nestjs/event-emitter';
 
-@Injectable()
 @WebSocketGateway({ cors: '*' })
 export class EventsGateway implements OnGatewayInit, OnGatewayConnection {
   constructor(private eventService: EventsService) {}
@@ -28,8 +27,9 @@ export class EventsGateway implements OnGatewayInit, OnGatewayConnection {
     this.eventService.socket = server;
   }
 
-  testUser(socket: Server) {
-    // this.socket.emit('test-emit1', 'yoyo');
+  testUser(payload: string) {
+    console.log('test user hefe ', payload);
+    this.server.emit('test-emit1', 'yoyo');
   }
 
   @SubscribeMessage('message')
@@ -38,9 +38,10 @@ export class EventsGateway implements OnGatewayInit, OnGatewayConnection {
     // this.server.emit('message', message);
   }
 
+  @OnEvent('test-create')
   @SubscribeMessage('test-emit')
   testFromClient(@MessageBody() message: string): void {
     // console.log('event from client 123: ', message);
-    // this.server.emit('message', message + 'from server');
+    this.server.emit('message', message + 'from server');
   }
 }
