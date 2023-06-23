@@ -11,6 +11,7 @@ import {
 import { Server, Socket } from 'socket.io';
 import { Message } from 'src/messages/schemas/message.schema';
 import { EventsService } from './events.service';
+import { Types } from 'mongoose';
 
 @WebSocketGateway({ cors: '*' })
 export class EventsGateway implements OnGatewayInit, OnGatewayConnection {
@@ -83,5 +84,13 @@ export class EventsGateway implements OnGatewayInit, OnGatewayConnection {
   @OnEvent('message.create')
   async sendNewMessage(payload: Message) {
     this.server.to(`${payload.room}`).emit('message.create', payload);
+  }
+  @OnEvent('message.delete')
+  async deleteMessage(
+    payload: Message & {
+      _id: Types.ObjectId;
+    },
+  ) {
+    this.server.to(`${payload.room}`).emit('message.delete', payload._id);
   }
 }

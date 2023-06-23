@@ -51,7 +51,8 @@ export class MessagesController {
 
   @Delete(':id')
   async remove(@Param('id') id: string) {
-    await this.messagesService.remove(id);
+    const messageRemove = await this.messagesService.remove(id);
+    this.eventEmitter.emit('message.delete', messageRemove);
     return 'success';
   }
 
