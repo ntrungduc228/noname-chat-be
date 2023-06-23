@@ -20,7 +20,10 @@ export class MessagesService {
       ...createMessageDto,
       sender,
     });
-    return await createMessage.save();
+    return (await createMessage.save()).populate({
+      path: 'sender',
+      select: 'username avatar email',
+    });
   }
 
   async createCall({

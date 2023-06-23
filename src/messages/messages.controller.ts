@@ -23,7 +23,12 @@ export class MessagesController {
   @Post()
   @UseGuards(AccessTokenGuard)
   async create(@Body() createMessageDto: CreateMessageDto, @Req() req) {
-    return await this.messagesService.create(createMessageDto, req.user.id);
+    const newMessage = await this.messagesService.create(
+      createMessageDto,
+      req.user.id,
+    );
+    this.eventEmitter.emit('message.create', newMessage);
+    return newMessage;
   }
 
   @Post('/test')
