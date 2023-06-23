@@ -19,7 +19,23 @@ export class UsersService {
   }
 
   async findOne(id: string) {
-    const user = await this.userModel.findOne({ _id: id });
+    const user = await this.userModel.findById(id).lean();
+    if (!user) {
+      throw new HttpException('User not found', 404);
+    }
+    return user;
+  }
+
+  async getProfile(id: string) {
+    const user = await this.userModel
+      .findById(id)
+      .select({
+        username: true,
+        avatar: true,
+        email: true,
+        role: true,
+      })
+      .lean();
     if (!user) {
       throw new HttpException('User not found', 404);
     }
@@ -27,7 +43,7 @@ export class UsersService {
   }
 
   async findOneActive(id: string): Promise<User> {
-    const user = await this.findOne(id);
+    const user = await this.userModel.findOne({ id: id, isActive: true });
     if (!user.isActive) {
       throw new HttpException('User is not active', 400);
     }
@@ -41,7 +57,7 @@ export class UsersService {
     return users;
   }
   async update(id: string, updateUserDto: UpdateUserDto): Promise<User> {
-    const user = await this.findOne(id);
+    const user = await this.userModel.findById(id);
     Object.assign(user, updateUserDto);
     return user.save();
   }
