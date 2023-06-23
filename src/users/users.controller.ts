@@ -21,7 +21,7 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
 export class UsersController {
   constructor(
     private readonly usersService: UsersService,
-    private readonly eventEmitter: EventEmitter2,
+    private eventEmitter: EventEmitter2,
     private readonly eventGateway: EventsGateway,
   ) {}
 
@@ -32,14 +32,10 @@ export class UsersController {
 
   @Get('/test')
   async getSocket() {
-    await this.eventGateway.server.emit('test-emit1', 'test tset');
+    // await this.eventGateway.server.emit('test-emit1', 'test tset');
     // await this.eventService.socket.emit('test-emit1', 'teset se');
     console.log('check http://api/users/test');
-    this.eventEmitter.emit('test-create', 'yooo');
-    // await this.eventGateway.testUser();
-    // console.log('this ', this.eventGateway.server);
-    // this.eventGateway.handleMessage('hihi');
-    // await this.eventService.testUserser();
+    this.eventEmitter.emit('test-create', 'yooo1');
     return { message: 'ok' };
   }
 
