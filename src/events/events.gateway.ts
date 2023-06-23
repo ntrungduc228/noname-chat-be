@@ -16,7 +16,7 @@ export class EventsGateway implements OnGatewayInit, OnGatewayConnection {
   constructor(private eventService: EventsService) {}
 
   handleConnection(socket: Server) {
-    console.log('socket ');
+    // console.log('socket ');
     this.eventService.socket = socket;
   }
 
@@ -27,9 +27,10 @@ export class EventsGateway implements OnGatewayInit, OnGatewayConnection {
     this.eventService.socket = server;
   }
 
-  testUser(payload: string) {
+  @OnEvent('test-create')
+  async testUser(payload: string) {
+    this.server.emit('message', payload);
     console.log('test user hefe ', payload);
-    this.server.emit('test-emit1', 'yoyo');
   }
 
   @SubscribeMessage('message')
@@ -38,10 +39,9 @@ export class EventsGateway implements OnGatewayInit, OnGatewayConnection {
     // this.server.emit('message', message);
   }
 
-  @OnEvent('test-create')
   @SubscribeMessage('test-emit')
   testFromClient(@MessageBody() message: string): void {
     // console.log('event from client 123: ', message);
-    this.server.emit('message', message + 'from server');
+    this.server.emit('message', message + 'from server123');
   }
 }
