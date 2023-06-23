@@ -21,8 +21,9 @@ export class MessagesController {
   ) {}
 
   @Post()
-  async create(@Body() createMessageDto: CreateMessageDto) {
-    return await this.messagesService.create(createMessageDto);
+  @UseGuards(AccessTokenGuard)
+  async create(@Body() createMessageDto: CreateMessageDto, @Req() req) {
+    return await this.messagesService.create(createMessageDto, req.user.id);
   }
 
   @Post('/test')

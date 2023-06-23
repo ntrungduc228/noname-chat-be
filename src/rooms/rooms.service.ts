@@ -5,6 +5,7 @@ import { CreateRoomDto } from './dto/create-room.dto';
 import { UpdateRoomDto } from './dto/update-room.dto';
 import { Room } from './schemas/room.schema';
 import { generateAvatar } from 'src/utils/generate-avatar';
+import { User } from 'src/users/schemas/user.schema';
 
 @Injectable()
 export class RoomsService {

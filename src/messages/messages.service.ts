@@ -12,8 +12,14 @@ export class MessagesService {
     @InjectModel(Message.name) private messageModel: Model<Message>,
   ) {}
 
-  async create(createMessageDto: CreateMessageDto): Promise<Message> {
-    const createMessage = new this.messageModel(createMessageDto);
+  async create(
+    createMessageDto: CreateMessageDto,
+    sender: string,
+  ): Promise<Message> {
+    const createMessage = new this.messageModel({
+      ...createMessageDto,
+      sender,
+    });
     return await createMessage.save();
   }
 
@@ -69,7 +75,9 @@ export class MessagesService {
   }
 
   async findByRoomId(roomId: string) {
-    return await this.messageModel.find({ room: roomId });
+    return await this.messageModel
+      .find({ room: roomId })
+      .populate('sender', 'avatar username');
   }
   async findByTypeAndParticipantId(
     type: MessageType,
