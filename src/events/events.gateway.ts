@@ -6,8 +6,9 @@ import {
   WebSocketServer,
   OnGatewayInit,
   OnGatewayConnection,
+  ConnectedSocket,
 } from '@nestjs/websockets';
-import { Server } from 'socket.io';
+import { Server, Socket } from 'socket.io';
 import { EventsService } from './events.service';
 import { OnEvent } from '@nestjs/event-emitter';
 
@@ -15,16 +16,49 @@ import { OnEvent } from '@nestjs/event-emitter';
 export class EventsGateway implements OnGatewayInit, OnGatewayConnection {
   constructor(private eventService: EventsService) {}
 
-  handleConnection(socket: Server) {
-    // console.log('socket ');
-    this.eventService.socket = socket;
+  handleConnection(socket: Server, @ConnectedSocket() client: Socket) {
+    console.log('socket ', client?.id);
   }
 
   @WebSocketServer()
   public server: Server;
 
   afterInit(server: Server) {
+    console.log('init');
     this.eventService.socket = server;
+  }
+
+  @SubscribeMessage('join-event')
+  joinEvent(
+    @MessageBody() event: string,
+    @ConnectedSocket() client: Socket,
+  ): void {
+    // this.server.
+    console.log('event ', event);
+    client.join(`${event}-event`);
+  }
+
+  @SubscribeMessage('join-room')
+  joinRoom(
+    @MessageBody() roomId: string,
+    @ConnectedSocket() client: Socket,
+  ): void {
+    // this.server.
+    client.join(roomId);
+  }
+
+  @OnEvent('message.new')
+  async personalEvent(payload: {
+    userId: string;
+    message: string;
+    roomId: string;
+  }) {
+    this.server.to(`${payload.userId}-event`).emit('event-new', payload);
+  }
+
+  @OnEvent('message.test')
+  async testMessage(payload: { message: string; roomId: string }) {
+    this.server.to(payload.roomId).emit('message-new', payload.message);
   }
 
   @OnEvent('test-create')

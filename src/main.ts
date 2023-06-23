@@ -28,8 +28,10 @@ async function bootstrap() {
     }),
   );
 
+  console.log('process', process.env.CLIENT_URI);
+
   app.enableCors({
-    origin: process.env.CLIENT_URI,
+    origin: '*',
   });
   app.use(passport.initialize());
   app.use(passport.session());
