@@ -7,11 +7,13 @@ import {
   Post,
   Req,
   UseGuards,
+  Query,
 } from '@nestjs/common';
 import { CreateMessageDto } from './dto/create-message.dto';
 import { MessagesService } from './messages.service';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { AccessTokenGuard } from 'src/auth/guards';
+import { PaginationMessageDto } from './dto/pagination-message.dto';
 
 @Controller('api/messages')
 export class MessagesController {
@@ -57,7 +59,11 @@ export class MessagesController {
   }
 
   @Get(':roomId')
-  async get(@Param('roomId') roomId: string) {
-    return await this.messagesService.findByRoomId(roomId);
+  async getAllMessage(
+    @Param('roomId') roomId: string,
+    @Query() { page, limit }: PaginationMessageDto,
+  ) {
+    console.log('r: ', roomId, 'page: ', page, 'limit: ', limit);
+    return await this.messagesService.findByRoomId(roomId, page, limit);
   }
 }
