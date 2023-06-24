@@ -8,6 +8,11 @@ export enum Role {
   ADMIN = 'ADMIN',
 }
 
+export enum UserStatus {
+  ACTIVE = 'ACTIVE',
+  BANNED = 'BANNED',
+}
+
 @Schema({ _id: false })
 export class Provider {
   @Prop()
@@ -55,6 +60,9 @@ export class User {
 
   @Prop({ type: Boolean, default: true })
   isActive: boolean;
+
+  @Prop({ type: String, default: UserStatus.ACTIVE })
+  status: UserStatus;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

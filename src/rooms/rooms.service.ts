@@ -175,7 +175,8 @@ export class RoomsService {
         .populate(
           'participants',
           '-password -providers -createdAt -updatedAt -__v',
-        );
+        )
+        .populate('lastMessage');
       return {
         rooms,
         endCursor: rooms?.[rooms.length - 1]?.newMessageAt || null,
