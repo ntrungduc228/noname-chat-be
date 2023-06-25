@@ -5,13 +5,16 @@ import {
   Body,
   Patch,
   Param,
-  Delete,
   UseGuards,
   Req,
 } from '@nestjs/common';
 import { RoomsService } from './rooms.service';
 import { CreateRoomDto } from './dto/create-room.dto';
-import { UpdateRoomDto } from './dto/update-room.dto';
+import {
+  RemoveMemberDto,
+  UpdateGroupDto,
+  UpdateMembersDto,
+} from './dto/update-room.dto';
 import { AccessTokenGuard } from 'src/auth/guards';
 
 @Controller('api/rooms')
@@ -56,12 +59,49 @@ export class RoomsController {
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateRoomDto: UpdateRoomDto) {
-    return this.roomsService.update(+id, updateRoomDto);
+  @UseGuards(AccessTokenGuard)
+  async update(
+    @Param('id') id: string,
+    @Body() updateGroupDto: UpdateGroupDto,
+  ) {
+    const room = await this.roomsService.update(id, updateGroupDto);
+    return { data: room };
   }
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.roomsService.remove(+id);
+  @Patch(':id/members/add')
+  @UseGuards(AccessTokenGuard)
+  async addMembers(
+    @Param('id') id: string,
+    @Body() updateMembersDto: UpdateMembersDto,
+    @Req() req,
+  ) {
+    const room = await this.roomsService.addMembers(
+      id,
+      req.user.id,
+      updateMembersDto,
+    );
+    return { data: room };
+  }
+
+  @Patch(':id/members/remove')
+  @UseGuards(AccessTokenGuard)
+  async removeMember(
+    @Param('id') id: string,
+    @Body() removeMemberDto: RemoveMemberDto,
+    @Req() req,
+  ) {
+    const room = await this.roomsService.removeMember(
+      id,
+      req.user.id,
+      removeMemberDto.memberId,
+    );
+    return { data: room };
+  }
+
+  @Patch(':id/out')
+  @UseGuards(AccessTokenGuard)
+  async outGroup(@Param('id') id: string, @Req() req) {
+    const room = await this.roomsService.outGroup(id, req.user.id);
+    return { data: room };
   }
 }

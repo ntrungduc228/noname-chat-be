@@ -43,8 +43,13 @@ export class UsersService {
   }
 
   async findOneActive(id: string): Promise<User> {
-    const user = await this.userModel.findOne({ id: id, isActive: true });
-    if (!user.isActive) {
+    const user = await this.userModel.findOne({ _id: id, isActive: true });
+    if (!user) {
+      console.log('id active ', id);
+      throw new HttpException(`User ${id} not found`, 404);
+    }
+
+    if (!user?.isActive) {
       throw new HttpException('User is not active', 400);
     }
     return user;
