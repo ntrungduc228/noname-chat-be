@@ -43,11 +43,15 @@ export class UsersService {
   }
 
   async findOneActive(id: string): Promise<User> {
-    const user = await this.userModel.findOne({ id: id, isActive: true });
-    if (!user.isActive) {
-      throw new HttpException('User is not active', 400);
+    try {
+      const user = await this.userModel.findById(id).lean();
+      if (!user.isActive) {
+        throw new HttpException('User is not active', 400);
+      }
+      return user;
+    } catch (e) {
+      throw new HttpException('User not found', 404);
     }
-    return user;
   }
 
   async findByUsername(username: string): Promise<User[]> {

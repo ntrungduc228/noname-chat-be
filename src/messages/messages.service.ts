@@ -32,13 +32,21 @@ export class MessagesService {
     senderId: ObjectId;
     callId: ObjectId;
   }): Promise<Message> {
-    const createMessage = new this.messageModel({
+    const newMessage = new this.messageModel({
       room: roomId,
       sender: senderId,
       call: callId,
       type: MessageType.CALL,
     });
-    return (await createMessage.save()).populate([
+
+    const createdMessage = await newMessage.save();
+
+    await this.roomService.addMessageToRoom(
+      roomId.toString(),
+      createdMessage._id.toString(),
+    );
+
+    return await createdMessage.populate([
       {
         path: 'sender',
         select: 'name avatar',
