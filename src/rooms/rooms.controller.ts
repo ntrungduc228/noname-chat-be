@@ -17,7 +17,7 @@ import {
 } from './dto/update-room.dto';
 import { AccessTokenGuard } from 'src/auth/guards';
 
-@Controller('api/rooms')
+@Controller('rooms')
 export class RoomsController {
   constructor(private readonly roomsService: RoomsService) {}
 

@@ -13,7 +13,7 @@ import { MessagesService } from './messages.service';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { AccessTokenGuard } from 'src/auth/guards';
 
-@Controller('api/messages')
+@Controller('messages')
 export class MessagesController {
   constructor(
     private readonly messagesService: MessagesService,

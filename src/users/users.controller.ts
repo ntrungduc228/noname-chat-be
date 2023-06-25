@@ -17,7 +17,7 @@ import { EventsGateway } from 'src/events/events.gateway';
 import { EventsService } from 'src/events/events.service';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 
-@Controller('api/users')
+@Controller('users')
 export class UsersController {
   constructor(
     private readonly usersService: UsersService,

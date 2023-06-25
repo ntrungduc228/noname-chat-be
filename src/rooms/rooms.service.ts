@@ -100,13 +100,13 @@ export class RoomsService {
 
   async getByIdAndParticipantId(
     id: string | ObjectId,
-    userId: string,
+    userId: string | ObjectId,
   ): Promise<Room> {
     try {
       const room = await this.roomModel
         .findOne({
           _id: id,
-          participants: userId,
+          participants: { $in: [userId] },
         })
         .populate(
           'participants',
@@ -155,7 +155,7 @@ export class RoomsService {
   }
 
   async checkPermissionChangeMembers(id: string, userId: string) {
-    const room = await this.findOne(id);
+    const room = await this.getByIdAndParticipantId(id, userId);
 
     if (!room.isGroup) {
       throw new HttpException('Only add members to a group chat', 400);

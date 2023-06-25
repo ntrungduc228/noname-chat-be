@@ -3,7 +3,7 @@ import { Controller, Get, Param, Patch, Req, UseGuards } from '@nestjs/common';
 import { AccessTokenGuard } from 'src/auth/guards';
 import { AdminService } from './admin.service';
 
-@Controller('api/admin')
+@Controller('admin')
 export class AdminController {
   constructor(private readonly adminService: AdminService) {}
   @Get('/users')
