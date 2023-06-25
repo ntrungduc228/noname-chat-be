@@ -1,23 +1,24 @@
-import { Injectable } from '@nestjs/common';
+import { OnEvent } from '@nestjs/event-emitter';
 import {
+  ConnectedSocket,
   MessageBody,
+  OnGatewayConnection,
+  OnGatewayInit,
   SubscribeMessage,
   WebSocketGateway,
   WebSocketServer,
-  OnGatewayInit,
-  OnGatewayConnection,
-  ConnectedSocket,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
+import { Message } from 'src/messages/schemas/message.schema';
 import { EventsService } from './events.service';
-import { OnEvent } from '@nestjs/event-emitter';
+import { Types } from 'mongoose';
 
 @WebSocketGateway({ cors: '*' })
 export class EventsGateway implements OnGatewayInit, OnGatewayConnection {
   constructor(private eventService: EventsService) {}
 
   handleConnection(socket: Server, @ConnectedSocket() client: Socket) {
-    console.log('socket ', client?.id);
+    // console.log('socket ', client?.id);
   }
 
   @WebSocketServer()
@@ -44,6 +45,7 @@ export class EventsGateway implements OnGatewayInit, OnGatewayConnection {
     @ConnectedSocket() client: Socket,
   ): void {
     // this.server.
+    console.log('join', roomId);
     client.join(roomId);
   }
 
@@ -77,5 +79,18 @@ export class EventsGateway implements OnGatewayInit, OnGatewayConnection {
   testFromClient(@MessageBody() message: string): void {
     // console.log('event from client 123: ', message);
     this.server.emit('message', message + 'from server123');
+  }
+
+  @OnEvent('message.create')
+  async sendNewMessage(payload: Message) {
+    this.server.to(`${payload.room}`).emit('message.create', payload);
+  }
+  @OnEvent('message.delete')
+  async deleteMessage(
+    payload: Message & {
+      _id: Types.ObjectId;
+    },
+  ) {
+    this.server.to(`${payload.room}`).emit('message.delete', payload._id);
   }
 }

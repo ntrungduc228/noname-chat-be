@@ -20,7 +20,10 @@ export class MessagesService {
       ...createMessageDto,
       sender,
     });
-    return await createMessage.save();
+    return (await createMessage.save()).populate({
+      path: 'sender',
+      select: 'username avatar email',
+    });
   }
 
   async createCall({
@@ -74,10 +77,21 @@ export class MessagesService {
     return await this.messageModel.findByIdAndDelete(id);
   }
 
-  async findByRoomId(roomId: string) {
-    return await this.messageModel
+  async findByRoomId(roomId: string, page: number, limit: number) {
+    const resPerPage = Math.floor(limit) || 20;
+    const curPage = Math.floor(page) || 1;
+    const skip = resPerPage * (curPage - 1);
+    const TotalMessages = await this.messageModel.count({ room: roomId });
+    const nextCursor =
+      Math.ceil(TotalMessages / limit) === curPage ? undefined : curPage + 1;
+
+    const data = await this.messageModel
       .find({ room: roomId })
+      .sort({ createdAt: -1 })
+      .limit(resPerPage)
+      .skip(skip)
       .populate('sender', 'avatar username');
+    return { data, nextCursor };
   }
   async findByTypeAndParticipantId(
     type: MessageType,
