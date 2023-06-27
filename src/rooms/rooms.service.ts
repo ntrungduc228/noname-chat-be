@@ -45,7 +45,6 @@ export class RoomsService {
           throw new HttpException('Chat must have at most 2 participants', 400);
         }
         const existingRoom = await this.findByParticipants(participants);
-        console.log(existingRoom);
         if (existingRoom) {
           if (allowReturnExisting) {
             return existingRoom;
@@ -103,7 +102,6 @@ export class RoomsService {
           'participants',
           '-password -providers -createdAt -updatedAt -__v',
         );
-      console.log(room);
       if (!room) {
         throw new HttpException('Room not found', 404);
       }
