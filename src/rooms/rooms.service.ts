@@ -80,6 +80,93 @@ export class RoomsService {
     return `This action returns all rooms`;
   }
 
+  async findParitipantsByUserId(userId: string) {
+    const user = await this.userService.findOne(userId);
+    const rooms = await this.roomModel.find({
+      participants: { $in: [userId] },
+      isGroup: false,
+    });
+    const participants = [];
+    if (!rooms.length) {
+      return [];
+    }
+    rooms.forEach((room: Room) => {
+      const roommate = room.participants.find(
+        (participant: User) => participant._id.toString() != userId,
+      );
+
+      if (!participants.includes(roommate._id.toString())) {
+        participants.push(roommate._id.toString());
+      }
+    });
+
+    return participants;
+  }
+
+  async findParticipantsByUsername(userId: string, username: string) {
+    const user = await this.userService.findOne(userId);
+
+    const rooms = await this.roomModel.aggregate([
+      {
+        $lookup: {
+          from: 'users',
+          let: { participantsIds: '$participants' },
+          pipeline: [
+            {
+              $match: {
+                $expr: { $in: ['$_id', '$$participantsIds'] },
+              },
+            },
+            {
+              $project: {
+                _id: 1,
+                username: 1,
+                avatar: 1,
+              },
+            },
+          ],
+          as: 'participants',
+        },
+      },
+      {
+        $match: {
+          isGroup: false,
+          // 'participants._id': userId,
+
+          'participants.username': { $regex: username, $options: 'i' },
+        },
+      },
+      {
+        $project: {
+          participants: 1,
+        },
+      },
+    ]);
+
+    const participants = [];
+    if (!rooms.length) {
+      return [];
+    }
+    rooms.forEach((room: Room) => {
+      if (
+        room.participants.some(
+          (participant: User) => participant._id.toString() === userId,
+        )
+      ) {
+        const roommate = room.participants.find(
+          (participant: User) => participant._id.toString() != userId,
+        );
+
+        if (!participants.includes(roommate._id.toString())) {
+          participants.push(roommate._id.toString());
+        }
+      }
+    });
+
+    // return participants;
+    return rooms;
+  }
+
   async findOne(id: string) {
     try {
       const room = await this.roomModel

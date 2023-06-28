@@ -58,6 +58,7 @@ export class UsersService {
   async findByUsername(username: string): Promise<User[]> {
     const users = await this.userModel.find({
       username: { $regex: username, $options: 'i' },
+      isActive: true,
     });
     return users;
   }

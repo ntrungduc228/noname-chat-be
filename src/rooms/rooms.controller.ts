@@ -30,6 +30,21 @@ export class RoomsController {
     };
   }
 
+  @Get('/participants')
+  @UseGuards(AccessTokenGuard)
+  async findParitipantsByUserId(@Req() req) {
+    const { q } = req.query;
+    console.log('q  ', q);
+    let data;
+    if (!q) {
+      data = await this.roomsService.findParitipantsByUserId(req.user.id);
+    } else {
+      data = await this.roomsService.findParticipantsByUsername(req.user.id, q);
+    }
+
+    return { data };
+  }
+
   @Get()
   @UseGuards(AccessTokenGuard)
   async getCursorPaginated(@Req() req) {
