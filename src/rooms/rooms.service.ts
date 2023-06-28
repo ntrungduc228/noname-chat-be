@@ -53,7 +53,6 @@ export class RoomsService {
           throw new HttpException('Chat must have at most 2 participants', 400);
         }
         const existingRoom = await this.findByParticipants(participants);
-        console.log(existingRoom);
         if (existingRoom) {
           if (allowReturnExisting) {
             return existingRoom;
@@ -388,11 +387,16 @@ export class RoomsService {
         .find(query)
         .sort({ newMessageAt: -1 })
         .limit(limit)
-        .populate(
-          'participants',
-          '-password -providers -createdAt -updatedAt -__v',
-        )
-        .populate('lastMessage');
+        .select('name avatar isGroup admin participants newMessageAt')
+        .populate('admin', 'username avatar email')
+        .populate('participants', 'username avatar email')
+        .populate({
+          path: 'lastMessage',
+          populate: {
+            path: 'sender',
+            select: 'username avatar email',
+          },
+        });
       return {
         rooms,
         endCursor: rooms?.[rooms.length - 1]?.newMessageAt || null,
@@ -401,5 +405,25 @@ export class RoomsService {
     } catch (error) {
       throw new HttpException(error.message, error.status);
     }
+  }
+
+  async addMessageToRoom(roomId: string, messageId: string): Promise<Room> {
+    const updatedRoom = await this.roomModel
+      .findByIdAndUpdate(
+        roomId,
+        {
+          $set: {
+            lastMessage: messageId,
+            newMessageAt: new Date(),
+          },
+        },
+        { new: true },
+      )
+      .populate(
+        'participants',
+        '-password -providers -createdAt -updatedAt -__v',
+      )
+      .populate('lastMessage');
+    return updatedRoom;
   }
 }

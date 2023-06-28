@@ -26,7 +26,6 @@ export class AuthController {
   @Get('info')
   @UseGuards(AccessTokenGuard)
   async getProfile(@Req() req) {
-    console.log('hi, ', req.user);
     const user = await this.userService.getProfile(req.user.id);
     return { user: user, message: 'ok' };
   }
