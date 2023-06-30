@@ -48,7 +48,7 @@ export class UsersService {
       if (!user.isActive) {
         throw new HttpException('User is not active', 400);
       }
-      return user;
+      return user as User;
     } catch (e) {
       throw new HttpException('User not found', 404);
     }
@@ -57,6 +57,7 @@ export class UsersService {
   async findByUsername(username: string): Promise<User[]> {
     const users = await this.userModel.find({
       username: { $regex: username, $options: 'i' },
+      isActive: true,
     });
     return users;
   }

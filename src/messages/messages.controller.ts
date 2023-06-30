@@ -15,7 +15,7 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
 import { AccessTokenGuard } from 'src/auth/guards';
 import { PaginationMessageDto } from './dto/pagination-message.dto';
 
-@Controller('api/messages')
+@Controller('messages')
 export class MessagesController {
   constructor(
     private readonly messagesService: MessagesService,

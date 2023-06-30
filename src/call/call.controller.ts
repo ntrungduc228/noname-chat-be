@@ -13,7 +13,7 @@ import { CallService } from './call.service';
 import { CreateCallDto } from './dto/create-call.dto';
 import { AccessTokenGuard } from 'src/auth/guards';
 
-@Controller('api/calls')
+@Controller('calls')
 export class CallController {
   constructor(private readonly callService: CallService) {}
 
