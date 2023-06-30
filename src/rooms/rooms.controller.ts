@@ -5,26 +5,56 @@ import {
   Body,
   Patch,
   Param,
-  Delete,
   UseGuards,
   Req,
 } from '@nestjs/common';
 import { RoomsService } from './rooms.service';
 import { CreateRoomDto } from './dto/create-room.dto';
-import { UpdateRoomDto } from './dto/update-room.dto';
+import {
+  RemoveMemberDto,
+  UpdateGroupDto,
+  UpdateMembersDto,
+} from './dto/update-room.dto';
 import { AccessTokenGuard } from 'src/auth/guards';
+import { EventEmitter2 } from '@nestjs/event-emitter';
+import { User } from 'src/users/schemas/user.schema';
 
-@Controller('api/rooms')
+@Controller('rooms')
 export class RoomsController {
-  constructor(private readonly roomsService: RoomsService) {}
+  constructor(
+    private readonly roomsService: RoomsService,
+    private eventEmitter: EventEmitter2,
+  ) {}
 
   @Post()
   @UseGuards(AccessTokenGuard)
   async create(@Body() createRoomDto: CreateRoomDto, @Req() req) {
     const room = await this.roomsService.create(createRoomDto, req.user.id);
+    room.participants.forEach((participant: User) => {
+      this.eventEmitter.emit('event.listen', {
+        userId: participant._id,
+        payload: participant,
+        type: 'room.created',
+      });
+    });
     return {
       data: room,
     };
+  }
+
+  @Get('/participants')
+  @UseGuards(AccessTokenGuard)
+  async findParitipantsByUserId(@Req() req) {
+    const { q } = req.query;
+    console.log('q  ', q);
+    let data;
+    if (!q) {
+      data = await this.roomsService.findParitipantsByUserId(req.user.id);
+    } else {
+      data = await this.roomsService.findParticipantsByUsername(req.user.id, q);
+    }
+
+    return { data };
   }
 
   @Get()
@@ -56,12 +86,49 @@ export class RoomsController {
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateRoomDto: UpdateRoomDto) {
-    return this.roomsService.update(+id, updateRoomDto);
+  @UseGuards(AccessTokenGuard)
+  async update(
+    @Param('id') id: string,
+    @Body() updateGroupDto: UpdateGroupDto,
+  ) {
+    const room = await this.roomsService.update(id, updateGroupDto);
+    return { data: room };
   }
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.roomsService.remove(+id);
+  @Patch(':id/members/add')
+  @UseGuards(AccessTokenGuard)
+  async addMembers(
+    @Param('id') id: string,
+    @Body() updateMembersDto: UpdateMembersDto,
+    @Req() req,
+  ) {
+    const room = await this.roomsService.addMembers(
+      id,
+      req.user.id,
+      updateMembersDto,
+    );
+    return { data: room };
+  }
+
+  @Patch(':id/members/remove')
+  @UseGuards(AccessTokenGuard)
+  async removeMember(
+    @Param('id') id: string,
+    @Body() removeMemberDto: RemoveMemberDto,
+    @Req() req,
+  ) {
+    const room = await this.roomsService.removeMember(
+      id,
+      req.user.id,
+      removeMemberDto.memberId,
+    );
+    return { data: room };
+  }
+
+  @Patch(':id/out')
+  @UseGuards(AccessTokenGuard)
+  async outGroup(@Param('id') id: string, @Req() req) {
+    const room = await this.roomsService.outGroup(id, req.user.id);
+    return { data: room };
   }
 }

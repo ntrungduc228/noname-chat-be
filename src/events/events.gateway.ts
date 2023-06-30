@@ -34,8 +34,32 @@ export class EventsGateway implements OnGatewayInit, OnGatewayConnection {
   public server: Server;
 
   afterInit(server: Server) {
-    console.log('init');
-    this.eventService.socket = server;
+    // console.log('init');
+    // this.eventService.socket = server;
+  }
+
+  @SubscribeMessage('register-listenner')
+  joinListenerRoom(
+    @MessageBody() userId: string,
+    @ConnectedSocket() client: Socket,
+  ): void {
+    console.log('client ', userId);
+    client.join(`${userId}-listenner`);
+  }
+
+  @OnEvent('event.listen')
+  async ListenEvent({
+    userId,
+    payload,
+    type,
+  }: {
+    type: string;
+    userId: string;
+    payload: any;
+  }) {
+    this.server
+      .to(`${userId}-listenner`)
+      .emit(`${userId}-event`, { payload, type, userId });
   }
 
   @SubscribeMessage('join-event')
@@ -119,6 +143,7 @@ export class EventsGateway implements OnGatewayInit, OnGatewayConnection {
   ) {
     this.server.to(`${payload.room}`).emit('message.delete', payload._id);
   }
+
   // call from client
   @SubscribeMessage('create-call')
   createCall(
