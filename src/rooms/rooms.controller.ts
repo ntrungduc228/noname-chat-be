@@ -16,15 +16,27 @@ import {
   UpdateMembersDto,
 } from './dto/update-room.dto';
 import { AccessTokenGuard } from 'src/auth/guards';
+import { EventEmitter2 } from '@nestjs/event-emitter';
+import { User } from 'src/users/schemas/user.schema';
 
 @Controller('rooms')
 export class RoomsController {
-  constructor(private readonly roomsService: RoomsService) {}
+  constructor(
+    private readonly roomsService: RoomsService,
+    private eventEmitter: EventEmitter2,
+  ) {}
 
   @Post()
   @UseGuards(AccessTokenGuard)
   async create(@Body() createRoomDto: CreateRoomDto, @Req() req) {
     const room = await this.roomsService.create(createRoomDto, req.user.id);
+    room.participants.forEach((participant: User) => {
+      this.eventEmitter.emit('event.listen', {
+        userId: participant._id,
+        payload: participant,
+        type: 'room.created',
+      });
+    });
     return {
       data: room,
     };

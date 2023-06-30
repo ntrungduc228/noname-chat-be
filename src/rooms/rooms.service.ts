@@ -81,10 +81,12 @@ export class RoomsService {
 
   async findParitipantsByUserId(userId: string) {
     const user = await this.userService.findOne(userId);
-    const rooms = await this.roomModel.find({
-      participants: { $in: [userId] },
-      isGroup: false,
-    });
+    const rooms = await this.roomModel
+      .find({
+        participants: { $in: [userId] },
+        isGroup: false,
+      })
+      .populate('participants', 'username avatar');
     const participants = [];
     if (!rooms.length) {
       return [];
@@ -95,7 +97,7 @@ export class RoomsService {
       );
 
       if (!participants.includes(roommate._id.toString())) {
-        participants.push(roommate._id.toString());
+        participants.push(roommate);
       }
     });
 
@@ -157,13 +159,13 @@ export class RoomsService {
         );
 
         if (!participants.includes(roommate._id.toString())) {
-          participants.push(roommate._id.toString());
+          participants.push(roommate);
         }
       }
     });
 
-    // return participants;
-    return rooms;
+    return participants;
+    // return rooms;
   }
 
   async findOne(id: string) {

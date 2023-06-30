@@ -31,11 +31,15 @@ export class UsersController {
   }
 
   @Get('/test')
-  async getSocket() {
+  @UseGuards(AccessTokenGuard)
+  async getSocket(@Req() req) {
     // await this.eventGateway.server.emit('test-emit1', 'test tset');
     // await this.eventService.socket.emit('test-emit1', 'teset se');
     console.log('check http://api/users/test');
-    this.eventEmitter.emit('test-create', 'yooo1');
+    this.eventEmitter.emit('event.listen', {
+      userId: req.user.id,
+      payload: 'yoo',
+    });
     return { message: 'ok' };
   }
 
