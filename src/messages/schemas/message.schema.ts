@@ -45,6 +45,9 @@ export class Message {
   @Prop({ type: Array, default: [] })
   images: string[];
 
+  @Prop({ type: Array, default: [] })
+  files: string[];
+
   @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'Call' })
   call: Call;
 }
