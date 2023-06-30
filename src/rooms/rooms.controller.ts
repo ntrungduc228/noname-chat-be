@@ -30,10 +30,10 @@ export class RoomsController {
   @Get()
   @UseGuards(AccessTokenGuard)
   async getCursorPaginated(@Req() req) {
-    const { limit, cursor } = req.query;
+    const { limit, cursor, type } = req.query;
     const user = req.user;
     const { rooms, endCursor, hasNextPage } =
-      await this.roomsService.getCursorPaginated(+limit, cursor, user.id);
+      await this.roomsService.getCursorPaginated(+limit, cursor, type, user.id);
     return {
       data: rooms,
       pageInfo: {
