@@ -44,12 +44,12 @@ export class RoomsController {
 
   @Get('/participants')
   @UseGuards(AccessTokenGuard)
-  async findParitipantsByUserId(@Req() req) {
+  async findParticipantsByUserId(@Req() req) {
     const { q } = req.query;
     console.log('q  ', q);
     let data;
     if (!q) {
-      data = await this.roomsService.findParitipantsByUserId(req.user.id);
+      data = await this.roomsService.findParticipantsByUserId(req.user.id);
     } else {
       data = await this.roomsService.findParticipantsByUsername(req.user.id, q);
     }
@@ -60,10 +60,10 @@ export class RoomsController {
   @Get()
   @UseGuards(AccessTokenGuard)
   async getCursorPaginated(@Req() req) {
-    const { limit, cursor } = req.query;
+    const { limit, cursor, type } = req.query;
     const user = req.user;
     const { rooms, endCursor, hasNextPage } =
-      await this.roomsService.getCursorPaginated(+limit, cursor, user.id);
+      await this.roomsService.getCursorPaginated(+limit, cursor, type, user.id);
     return {
       data: rooms,
       pageInfo: {

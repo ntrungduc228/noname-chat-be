@@ -79,7 +79,7 @@ export class RoomsService {
     return `This action returns all rooms`;
   }
 
-  async findParitipantsByUserId(userId: string) {
+  async findParticipantsByUserId(userId: string) {
     const user = await this.userService.findOne(userId);
     const rooms = await this.roomModel
       .find({
@@ -371,6 +371,7 @@ export class RoomsService {
   async getCursorPaginated(
     limit = 10,
     cursor: string = new Date().toISOString(),
+    type: 'all' | 'direct' | 'group' = 'all',
     userId: string,
   ): Promise<{
     rooms: Room[];
@@ -384,6 +385,11 @@ export class RoomsService {
         },
         participants: userId,
       };
+      if (type === 'direct') {
+        query['isGroup'] = false;
+      } else if (type === 'group') {
+        query['isGroup'] = true;
+      }
 
       const rooms = await this.roomModel
         .find(query)

@@ -3,6 +3,7 @@ import {
   ConnectedSocket,
   MessageBody,
   OnGatewayConnection,
+  OnGatewayDisconnect,
   OnGatewayInit,
   SubscribeMessage,
   WebSocketGateway,
@@ -12,29 +13,37 @@ import { Types } from 'mongoose';
 import { Server, Socket } from 'socket.io';
 import { Message } from 'src/messages/schemas/message.schema';
 import { EventsService } from './events.service';
+import { UserSubject } from './observer-pattern/user-subject';
+import { UserObserver } from './observer-pattern/user-observer';
+
 type CallPayload = {
   _id: string;
   host: string;
   peerId: string;
   participants: string[];
+  usersJoined: string[];
 };
 const calls: CallPayload[] = [];
-const users: {
-  [key: string]: string[];
-} = {};
 @WebSocketGateway({ cors: '*' })
-export class EventsGateway implements OnGatewayInit, OnGatewayConnection {
+export class EventsGateway
+  implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect
+{
   constructor(private eventService: EventsService) {}
 
   handleConnection(socket: Server, @ConnectedSocket() client: Socket) {
-    // console.log('socket ', client?.id);
+    console.log('socket ', client?.id);
+  }
+
+  handleDisconnect(@ConnectedSocket() client: Socket) {
+    this.userSubject.removeObserverByClientId(client.id);
   }
 
   @WebSocketServer()
   public server: Server;
+  public userSubject: UserSubject;
 
   afterInit(server: Server) {
-    // console.log('init');
+    this.userSubject = new UserSubject(server);
     // this.eventService.socket = server;
   }
 
@@ -100,15 +109,14 @@ export class EventsGateway implements OnGatewayInit, OnGatewayConnection {
     @MessageBody() userId: string,
     @ConnectedSocket() client: Socket,
   ): void {
-    // add client to user list
-    if (users[userId]) {
-      users[userId].push(client.id);
-    } else {
-      users[userId] = [client.id];
-    }
+    this.userSubject.registerObserver(new UserObserver(userId, client));
     calls.forEach((call) => {
-      if (call.participants.includes(userId) && call.host !== userId) {
+      if (
+        call.participants.includes(userId) &&
+        !call.usersJoined.includes(userId)
+      ) {
         client.emit('incoming-call', call._id);
+        call.usersJoined.push(userId);
       }
     });
   }
@@ -160,15 +168,10 @@ export class EventsGateway implements OnGatewayInit, OnGatewayConnection {
         host: callPayload.host,
         participants: callPayload.participants,
         peerId: callPayload.peerId,
+        usersJoined: [callPayload.host],
       });
     }
-    callPayload.participants.forEach((participant) => {
-      if (users[participant] && participant !== callPayload.host) {
-        users[participant].forEach((clientId) => {
-          this.server.to(clientId).emit('incoming-call', callPayload._id);
-        });
-      }
-    });
+    this.userSubject.inComingCall(callPayload.participants, callPayload._id);
     client.join(callPayload._id);
   }
   @SubscribeMessage('join-call')
@@ -177,7 +180,9 @@ export class EventsGateway implements OnGatewayInit, OnGatewayConnection {
     @ConnectedSocket() client: Socket,
   ): void {
     client.join(callId);
-    const call = calls.find((call) => call._id === callId);
+    const call = calls.find(
+      (call) => call._id === callId && call.participants.includes(userId),
+    );
     if (call) {
       client.emit('receive-peer-id', call.peerId);
     }
@@ -187,20 +192,25 @@ export class EventsGateway implements OnGatewayInit, OnGatewayConnection {
     @MessageBody() callId: string,
     @ConnectedSocket() client: Socket,
   ): void {
+    console.log('leave-call', callId);
     client.leave(callId);
   }
-  @SubscribeMessage('call-accepted')
+  @SubscribeMessage('accept-call')
   callAccepted(
     @MessageBody() callId: string,
     @ConnectedSocket() client: Socket,
   ): void {
     client.to(callId).emit('call-accepted');
   }
-  @SubscribeMessage('call-rejected')
+  @SubscribeMessage('reject-call')
   callRejected(
     @MessageBody() callId: string,
     @ConnectedSocket() client: Socket,
   ): void {
+    const index = calls.findIndex((call) => call._id === callId);
+    if (index !== -1) {
+      calls.splice(index, 1);
+    }
     client.to(callId).emit('call-rejected');
   }
   @SubscribeMessage('end-call')
