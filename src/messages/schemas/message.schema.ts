@@ -47,6 +47,9 @@ export class Message {
 
   @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'Call' })
   call: Call;
+
+  @Prop({ type: Array, default: [] })
+  files: string[];
 }
 
 export const MessageSchema = SchemaFactory.createForClass(Message);

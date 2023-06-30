@@ -79,7 +79,7 @@ export class RoomsService {
     return `This action returns all rooms`;
   }
 
-  async findParitipantsByUserId(userId: string) {
+  async findParticipantsByUserId(userId: string) {
     const user = await this.userService.findOne(userId);
     const rooms = await this.roomModel
       .find({
