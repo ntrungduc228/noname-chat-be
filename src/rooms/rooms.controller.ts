@@ -31,9 +31,16 @@ export class RoomsController {
   async create(@Body() createRoomDto: CreateRoomDto, @Req() req) {
     const room = await this.roomsService.create(createRoomDto, req.user.id);
     room.participants.forEach((participant: User) => {
+      console.log('emit ', participant.username);
       this.eventEmitter.emit('event.listen', {
         userId: participant._id,
-        payload: participant,
+        payload: {
+          admin: room.admin,
+          avatar: room.avatar,
+          name: room.name,
+          _id: room._id,
+          lastMessage: room.lastMessage,
+        },
         type: 'room.created',
       });
     });
@@ -46,7 +53,6 @@ export class RoomsController {
   @UseGuards(AccessTokenGuard)
   async findParticipantsByUserId(@Req() req) {
     const { q } = req.query;
-    console.log('q  ', q);
     let data;
     if (!q) {
       data = await this.roomsService.findParticipantsByUserId(req.user.id);
