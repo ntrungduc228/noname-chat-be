@@ -2,6 +2,7 @@ import {
   Controller,
   Get,
   Post,
+  Delete,
   Body,
   Patch,
   Param,
@@ -129,6 +130,12 @@ export class RoomsController {
   @UseGuards(AccessTokenGuard)
   async outGroup(@Param('id') id: string, @Req() req) {
     const room = await this.roomsService.outGroup(id, req.user.id);
+    return { data: room };
+  }
+  @Delete(':id')
+  @UseGuards(AccessTokenGuard)
+  async remove(@Param('id') id: string, @Req() req) {
+    const room = await this.roomsService.deleteRoom(id, req.user.id);
     return { data: room };
   }
 }

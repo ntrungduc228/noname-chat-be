@@ -15,6 +15,7 @@ import { Message } from 'src/messages/schemas/message.schema';
 import { EventsService } from './events.service';
 import { UserSubject } from './observer-pattern/user-subject';
 import { UserObserver } from './observer-pattern/user-observer';
+import { Room } from 'src/rooms/schemas/room.schema';
 
 type CallPayload = {
   _id: string;
@@ -109,7 +110,7 @@ export class EventsGateway
     @MessageBody() userId: string,
     @ConnectedSocket() client: Socket,
   ): void {
-    this.userSubject.registerObserver(new UserObserver(userId, client));
+    this.userSubject.subscribe(new UserObserver(userId, client));
     calls.forEach((call) => {
       if (
         call.participants.includes(userId) &&
@@ -142,6 +143,7 @@ export class EventsGateway
   @OnEvent('message.create')
   async sendNewMessage(payload: Message) {
     this.server.to(`${payload.room}`).emit('message.create', payload);
+    this.server.emit('new-message');
   }
   @OnEvent('message.delete')
   async deleteMessage(
@@ -150,6 +152,17 @@ export class EventsGateway
     },
   ) {
     this.server.to(`${payload.room}`).emit('message.delete', payload._id);
+  }
+
+  @OnEvent('room.update')
+  async updateRoom(room: Room) {
+    room.participants.forEach((participant) => {
+      this.userSubject.users.forEach((user) => {
+        if (user._id === participant._id.toString()) {
+          user.client.emit('update-room', room);
+        }
+      });
+    });
   }
 
   // call from client

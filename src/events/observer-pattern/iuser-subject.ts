@@ -1,8 +1,10 @@
 import { UserObserver } from './user-observer';
 
 interface IUserSubject {
-  registerObserver(observer: UserObserver): void;
-  removeObserver(observer: UserObserver): void;
+  subscribe(observer: UserObserver): void;
+  unsubscribe(observer: UserObserver): void;
+  notifyUserOnline(observer: UserObserver): void;
+  notifyUserOffline(observer: UserObserver): void;
 }
 
 export { IUserSubject };
