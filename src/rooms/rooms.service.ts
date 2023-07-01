@@ -225,7 +225,7 @@ export class RoomsService {
     }
 
     const room = await this.findOne(id);
-    if (room.participants.length < 3) {
+    if (!room.isGroup) {
       throw new HttpException(
         'Only group chat can be change name or avatar',
         400,
