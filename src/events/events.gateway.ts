@@ -12,7 +12,6 @@ import {
 import { Types } from 'mongoose';
 import { Server, Socket } from 'socket.io';
 import { Message } from 'src/messages/schemas/message.schema';
-import { EventsService } from './events.service';
 import { UserSubject } from './observer-pattern/user-subject';
 import { UserObserver } from './observer-pattern/user-observer';
 import { Room } from 'src/rooms/schemas/room.schema';
@@ -29,10 +28,8 @@ const calls: CallPayload[] = [];
 export class EventsGateway
   implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect
 {
-  constructor(private eventService: EventsService) {}
-
-  handleConnection(socket: Server, @ConnectedSocket() client: Socket) {
-    console.log('socket ', client?.id);
+  handleConnection(@ConnectedSocket() client: Socket) {
+    // console.log('socket ', client?.id);
   }
 
   handleDisconnect(@ConnectedSocket() client: Socket) {
@@ -45,7 +42,6 @@ export class EventsGateway
 
   afterInit(server: Server) {
     this.userSubject = new UserSubject(server);
-    // this.eventService.socket = server;
   }
 
   @SubscribeMessage('register-listenner')
@@ -70,6 +66,37 @@ export class EventsGateway
     this.server
       .to(`${userId}-listenner`)
       .emit(`${userId}-event`, { payload, type, userId });
+  }
+
+  @OnEvent('room-updated')
+  async RoomUpdated({ payload, type }: { type: string; payload: any }) {
+    this.server.emit(`room-updated`, { payload, type });
+  }
+
+  @OnEvent('room.outed')
+  async RoomOuted({
+    payload,
+    type,
+    userId,
+  }: {
+    type: string;
+    payload: any;
+    userId;
+  }) {
+    this.server.emit(`room.outed`, { payload, type, userId });
+  }
+
+  @OnEvent('room.removed')
+  async RoomRemoved({
+    payload,
+    type,
+    userId,
+  }: {
+    type: string;
+    payload: any;
+    userId;
+  }) {
+    this.server.emit(`room.removed`, { payload, type, userId });
   }
 
   @SubscribeMessage('join-event')
@@ -100,11 +127,6 @@ export class EventsGateway
     this.server.to(`${payload.userId}-event`).emit('event-new', payload);
   }
 
-  @OnEvent('message.test')
-  async testMessage(payload: { message: string; roomId: string }) {
-    this.server.to(payload.roomId).emit('message-new', payload.message);
-  }
-
   @SubscribeMessage('join-app')
   joinApp(
     @MessageBody() userId: string,
@@ -120,24 +142,6 @@ export class EventsGateway
         call.usersJoined.push(userId);
       }
     });
-  }
-
-  @OnEvent('test-create')
-  async testUser(payload: string) {
-    this.server.emit('message', payload);
-    console.log('test user hefe ', payload);
-  }
-
-  @SubscribeMessage('message')
-  handleMessage(@MessageBody() message: string): void {
-    console.log('event from client: ', message);
-    // this.server.emit('message', message);
-  }
-
-  @SubscribeMessage('test-emit')
-  testFromClient(@MessageBody() message: string): void {
-    // console.log('event from client 123: ', message);
-    this.server.emit('message', message + 'from server123');
   }
 
   @OnEvent('message.create')
@@ -238,3 +242,26 @@ export class EventsGateway
     client.to(callId).emit('call-ended');
   }
 }
+
+// @OnEvent('message.test')
+// async testMessage(payload: { message: string; roomId: string }) {
+//   this.server.to(payload.roomId).emit('message-new', payload.message);
+// }
+
+// @OnEvent('test-create')
+// async testUser(payload: string) {
+//   this.server.emit('message', payload);
+//   console.log('test user hefe ', payload);
+// }
+
+// @SubscribeMessage('message')
+// handleMessage(@MessageBody() message: string): void {
+//   console.log('event from client: ', message);
+//   // this.server.emit('message', message);
+// }
+
+// @SubscribeMessage('test-emit')
+// testFromClient(@MessageBody() message: string): void {
+//   // console.log('event from client 123: ', message);
+//   this.server.emit('message', message + 'from server123');
+// }

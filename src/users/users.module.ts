@@ -4,9 +4,7 @@ import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { UsersController } from './users.controller';
 import { UsersService } from './users.service';
-import { EventsGateway } from 'src/events/events.gateway';
 import { EventsModule } from 'src/events/events.module';
-import { EventsService } from 'src/events/events.service';
 
 @Module({
   imports: [
