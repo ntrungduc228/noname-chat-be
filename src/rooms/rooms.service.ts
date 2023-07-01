@@ -440,6 +440,15 @@ export class RoomsService {
     return updatedRoom;
   }
 
+  async checkRoom(id: string, participants: ObjectId[]): Promise<Room> {
+    let room = await this.roomModel.findById(id);
+    if (!room) {
+      room = await this.roomModel.findOne({
+        participants: participants,
+      });
+    }
+    return room;
+  }
   async deleteRoom(id: string, userId: string) {
     await this.getByIdAndParticipantId(id, userId);
     const deleteRoom = await this.roomModel.findByIdAndUpdate(

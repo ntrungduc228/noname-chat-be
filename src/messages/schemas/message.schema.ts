@@ -46,11 +46,11 @@ export class Message {
   @Prop({ type: Array, default: [] })
   images: string[];
 
-  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'Call' })
-  call: Call;
-
   @Prop({ type: Array, default: [] })
   files: string[];
+
+  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'Call' })
+  call: Call;
 }
 
 export const MessageSchema = SchemaFactory.createForClass(Message);

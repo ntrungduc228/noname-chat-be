@@ -198,4 +198,12 @@ export class RoomsController {
     const room = await this.roomsService.deleteRoom(id, req.user.id);
     return { data: room };
   }
+  @Get(':id/checkroom')
+  @UseGuards(AccessTokenGuard)
+  async checkRoom(@Param('id') id: string, @Req() req) {
+    const room = await this.roomsService.checkRoom(id, [req.user.id, id]);
+    return {
+      data: room,
+    };
+  }
 }
