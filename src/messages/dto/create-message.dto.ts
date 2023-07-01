@@ -8,3 +8,7 @@ export class CreateMessageDto {
   readonly seenders: Schema.Types.ObjectId[];
   readonly room: Schema.Types.ObjectId;
 }
+export class CreateMessage {
+  readonly message: CreateMessageDto;
+  readonly isNotTemp: boolean;
+}

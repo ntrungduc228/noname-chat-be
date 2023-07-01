@@ -9,26 +9,44 @@ import {
   UseGuards,
   Query,
 } from '@nestjs/common';
-import { CreateMessageDto } from './dto/create-message.dto';
+import { CreateMessage, CreateMessageDto } from './dto/create-message.dto';
 import { MessagesService } from './messages.service';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { AccessTokenGuard } from 'src/auth/guards';
 import { PaginationMessageDto } from './dto/pagination-message.dto';
+import { RoomsService } from 'src/rooms/rooms.service';
+import { CreateRoomDto } from 'src/rooms/dto/create-room.dto';
 
 @Controller('messages')
 export class MessagesController {
   constructor(
     private readonly messagesService: MessagesService,
+    private readonly roomsService: RoomsService,
     private eventEmitter: EventEmitter2,
   ) {}
 
   @Post()
   @UseGuards(AccessTokenGuard)
-  async create(@Body() createMessageDto: CreateMessageDto, @Req() req) {
-    const newMessage = await this.messagesService.create(
-      createMessageDto,
-      req.user.id,
-    );
+  async create(@Body() createMessage: CreateMessage, @Req() req) {
+    let newMessage;
+    if (createMessage.isNotTemp) {
+      newMessage = await this.messagesService.create(
+        createMessage.message,
+        req.user.id,
+      );
+    } else {
+      const roomCreate: CreateRoomDto = {
+        isGroup: false,
+        participants: [req.user.id, createMessage.message.room],
+      };
+      const room = await this.roomsService.create(roomCreate, req.user.id);
+      console.log('rooom', room);
+      newMessage = await this.messagesService.create(
+        { ...createMessage.message, room: room._id },
+        req.user.id,
+      );
+    }
+
     this.eventEmitter.emit('message.create', newMessage);
     return newMessage;
   }
