@@ -30,22 +30,26 @@ export class RoomsController {
   @UseGuards(AccessTokenGuard)
   async create(@Body() createRoomDto: CreateRoomDto, @Req() req) {
     const room = await this.roomsService.create(createRoomDto, req.user.id);
+
+    const dataReturn = {
+      admin: room.admin,
+      avatar: room.avatar,
+      name: room.name,
+      _id: room._id,
+      lastMessage: room.lastMessage,
+    };
+
     room.participants.forEach((participant: User) => {
       console.log('emit ', participant.username);
       this.eventEmitter.emit('event.listen', {
         userId: participant._id,
-        payload: {
-          admin: room.admin,
-          avatar: room.avatar,
-          name: room.name,
-          _id: room._id,
-          lastMessage: room.lastMessage,
-        },
+        payload: dataReturn,
         type: 'room.created',
       });
     });
+
     return {
-      data: room,
+      data: dataReturn,
     };
   }
 
@@ -98,7 +102,30 @@ export class RoomsController {
     @Body() updateGroupDto: UpdateGroupDto,
   ) {
     const room = await this.roomsService.update(id, updateGroupDto);
-    return { data: room };
+
+    const dataReturn = {
+      admin: room.admin,
+      avatar: room.avatar,
+      name: room.name,
+      _id: room._id,
+      lastMessage: room.lastMessage,
+    };
+
+    room.participants.forEach((participant: User) => {
+      console.log('emit ', participant.username);
+      this.eventEmitter.emit('event.listen', {
+        userId: participant._id,
+        payload: dataReturn,
+        type: 'room.updated',
+      });
+    });
+
+    this.eventEmitter.emit('room-updated', {
+      payload: dataReturn,
+      type: 'room.updated',
+    });
+
+    return { data: dataReturn };
   }
 
   @Patch(':id/members/add')
@@ -113,6 +140,7 @@ export class RoomsController {
       req.user.id,
       updateMembersDto,
     );
+
     return { data: room };
   }
 
@@ -128,6 +156,19 @@ export class RoomsController {
       req.user.id,
       removeMemberDto.memberId,
     );
+
+    this.eventEmitter.emit('event.listen', {
+      userId: removeMemberDto.memberId,
+      payload: room,
+      type: 'room.removed',
+    });
+
+    this.eventEmitter.emit('room.removed', {
+      userId: removeMemberDto.memberId,
+      payload: room,
+      type: 'room.removed',
+    });
+
     return { data: room };
   }
 
@@ -135,6 +176,19 @@ export class RoomsController {
   @UseGuards(AccessTokenGuard)
   async outGroup(@Param('id') id: string, @Req() req) {
     const room = await this.roomsService.outGroup(id, req.user.id);
+
+    this.eventEmitter.emit('event.listen', {
+      userId: req.user.id,
+      payload: room,
+      type: 'room.outed',
+    });
+
+    this.eventEmitter.emit('room.outed', {
+      userId: req.user.id,
+      payload: room,
+      type: 'room.outed',
+    });
+
     return { data: room };
   }
 }

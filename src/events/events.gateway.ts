@@ -67,6 +67,37 @@ export class EventsGateway
       .emit(`${userId}-event`, { payload, type, userId });
   }
 
+  @OnEvent('room-updated')
+  async RoomUpdated({ payload, type }: { type: string; payload: any }) {
+    this.server.emit(`room-updated`, { payload, type });
+  }
+
+  @OnEvent('room.outed')
+  async RoomOuted({
+    payload,
+    type,
+    userId,
+  }: {
+    type: string;
+    payload: any;
+    userId;
+  }) {
+    this.server.emit(`room.outed`, { payload, type, userId });
+  }
+
+  @OnEvent('room.removed')
+  async RoomRemoved({
+    payload,
+    type,
+    userId,
+  }: {
+    type: string;
+    payload: any;
+    userId;
+  }) {
+    this.server.emit(`room.removed`, { payload, type, userId });
+  }
+
   @SubscribeMessage('join-event')
   joinEvent(
     @MessageBody() event: string,
