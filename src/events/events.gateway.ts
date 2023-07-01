@@ -253,26 +253,3 @@ export class EventsGateway
     client.to(callId).emit('call-ended');
   }
 }
-
-// @OnEvent('message.test')
-// async testMessage(payload: { message: string; roomId: string }) {
-//   this.server.to(payload.roomId).emit('message-new', payload.message);
-// }
-
-// @OnEvent('test-create')
-// async testUser(payload: string) {
-//   this.server.emit('message', payload);
-//   console.log('test user hefe ', payload);
-// }
-
-// @SubscribeMessage('message')
-// handleMessage(@MessageBody() message: string): void {
-//   console.log('event from client: ', message);
-//   // this.server.emit('message', message);
-// }
-
-// @SubscribeMessage('test-emit')
-// testFromClient(@MessageBody() message: string): void {
-//   // console.log('event from client 123: ', message);
-//   this.server.emit('message', message + 'from server123');
-// }
