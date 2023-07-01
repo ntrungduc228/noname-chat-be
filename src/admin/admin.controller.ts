@@ -2,10 +2,14 @@ import { Controller, Get, Param, Patch, Req, UseGuards } from '@nestjs/common';
 
 import { AccessTokenGuard } from 'src/auth/guards';
 import { AdminService } from './admin.service';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 
 @Controller('admin')
 export class AdminController {
-  constructor(private readonly adminService: AdminService) {}
+  constructor(
+    private readonly adminService: AdminService,
+    private eventEmitter: EventEmitter2,
+  ) {}
   @Get('/users')
   @UseGuards(AccessTokenGuard)
   async getUsers(
@@ -37,6 +41,7 @@ export class AdminController {
   @UseGuards(AccessTokenGuard)
   async lockUser(@Param('id') id: string) {
     const user = await this.adminService.lockUser(id);
+    this.eventEmitter.emit('user.locked', user);
     return {
       message: 'Lock user successfully',
       data: user,

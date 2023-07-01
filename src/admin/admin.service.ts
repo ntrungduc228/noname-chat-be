@@ -33,13 +33,21 @@ export class AdminService {
     };
   }
   async lockUser(id: string) {
-    return await this.userModel.findByIdAndUpdate(id, {
-      status: UserStatus.BANNED,
-    });
+    return await this.userModel.findByIdAndUpdate(
+      id,
+      {
+        status: UserStatus.BANNED,
+      },
+      { new: true },
+    );
   }
   async unlockUser(id: string) {
-    return await this.userModel.findByIdAndUpdate(id, {
-      status: UserStatus.ACTIVE,
-    });
+    return await this.userModel.findByIdAndUpdate(
+      id,
+      {
+        status: UserStatus.ACTIVE,
+      },
+      { new: true },
+    );
   }
 }

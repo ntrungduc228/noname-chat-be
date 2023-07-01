@@ -15,6 +15,7 @@ import { Message } from 'src/messages/schemas/message.schema';
 import { UserSubject } from './observer-pattern/user-subject';
 import { UserObserver } from './observer-pattern/user-observer';
 import { Room } from 'src/rooms/schemas/room.schema';
+import { User } from 'src/users/schemas/user.schema';
 
 type CallPayload = {
   _id: string;
@@ -71,6 +72,16 @@ export class EventsGateway
   @OnEvent('room-updated')
   async RoomUpdated({ payload, type }: { type: string; payload: any }) {
     this.server.emit(`room-updated`, { payload, type });
+  }
+
+  @OnEvent('user.locked')
+  async UserLocked(payload: User) {
+    this.userSubject.users.forEach((user) => {
+      if (user._id.toString() === payload._id.toString()) {
+        user.client.emit('user.locked', payload);
+        this.userSubject.removeObserverByClientId(user.client.id);
+      }
+    });
   }
 
   @OnEvent('room.outed')

@@ -3,6 +3,7 @@ import { AuthService } from './auth.service';
 import { AuthGuard } from '@nestjs/passport';
 import { AccessTokenGuard } from './guards';
 import { UsersService } from 'src/users/users.service';
+import { UserStatus } from 'src/users/schemas/user.schema';
 
 @Controller('auth')
 export class AuthController {
@@ -19,7 +20,14 @@ export class AuthController {
   @UseGuards(AuthGuard('google'))
   @Redirect()
   async googleAuthRedirect(@Req() req, @Res() res) {
-    const { token } = await this.authService.googleLogin(req);
+    const { token, user } = await this.authService.googleLogin(req);
+    if (user.status === UserStatus.BANNED) {
+      return {
+        url: `http://localhost:3000/redirect?error=${encodeURIComponent(
+          'your account has been banned',
+        )}`,
+      };
+    }
     return { url: `http://localhost:3000/redirect?token=${token}` };
   }
 

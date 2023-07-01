@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { User } from '../users/schemas/user.schema';
+import { User, UserStatus } from '../users/schemas/user.schema';
 import { Model } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
 @Injectable()
@@ -18,7 +18,7 @@ export class AuthService {
     const jwt = await this.jwtService.signAsync({ id: user.id });
     return {
       message: 'User information from google',
-      user: req.user,
+      user: user,
       // userCreate: user,
       token: jwt,
     };
