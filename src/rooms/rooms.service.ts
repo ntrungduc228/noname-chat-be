@@ -1,22 +1,20 @@
-import { UsersService } from './../users/users.service';
 import { HttpException, Injectable } from '@nestjs/common';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { InjectModel } from '@nestjs/mongoose';
-import mongoose, { Model, ObjectId } from 'mongoose';
-import { CreateRoomDto } from './dto/create-room.dto';
-import {
-  UpdateGroupDto,
-  UpdateMembersDto,
-  UpdateRoomDto,
-} from './dto/update-room.dto';
-import { Room } from './schemas/room.schema';
-import { generateAvatar } from 'src/utils/generate-avatar';
+import { Model, ObjectId } from 'mongoose';
 import { User } from 'src/users/schemas/user.schema';
+import { generateAvatar } from 'src/utils/generate-avatar';
+import { UsersService } from './../users/users.service';
+import { CreateRoomDto } from './dto/create-room.dto';
+import { UpdateGroupDto, UpdateMembersDto } from './dto/update-room.dto';
+import { Room } from './schemas/room.schema';
 
 @Injectable()
 export class RoomsService {
   constructor(
     @InjectModel(Room.name) private roomModel: Model<Room>,
     private readonly userService: UsersService,
+    private eventEmitter: EventEmitter2,
   ) {}
 
   async create(
@@ -384,6 +382,7 @@ export class RoomsService {
           $lt: cursor,
         },
         participants: userId,
+        isDeleted: false,
       };
       if (type === 'direct') {
         query['isGroup'] = false;
@@ -427,11 +426,31 @@ export class RoomsService {
         },
         { new: true },
       )
-      .populate(
-        'participants',
-        '-password -providers -createdAt -updatedAt -__v',
-      )
-      .populate('lastMessage');
+      .select('name avatar isGroup admin participants newMessageAt')
+      .populate('admin', 'username avatar email')
+      .populate('participants', 'username avatar email')
+      .populate({
+        path: 'lastMessage',
+        populate: {
+          path: 'sender',
+          select: 'username avatar email',
+        },
+      });
+    this.eventEmitter.emit('room.update', updatedRoom);
     return updatedRoom;
+  }
+
+  async deleteRoom(id: string, userId: string) {
+    await this.getByIdAndParticipantId(id, userId);
+    const deleteRoom = await this.roomModel.findByIdAndUpdate(
+      id,
+      {
+        $set: {
+          isDeleted: true,
+        },
+      },
+      { new: true },
+    );
+    return deleteRoom;
   }
 }
