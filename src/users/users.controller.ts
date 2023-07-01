@@ -14,7 +14,6 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { AccessTokenGuard } from 'src/auth/guards';
 import { EventsGateway } from 'src/events/events.gateway';
-import { EventsService } from 'src/events/events.service';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 
 @Controller('users')
@@ -28,19 +27,6 @@ export class UsersController {
   @Post()
   async create(@Body() createUserDto: CreateUserDto) {
     return this.usersService.create(createUserDto);
-  }
-
-  @Get('/test')
-  @UseGuards(AccessTokenGuard)
-  async getSocket(@Req() req) {
-    // await this.eventGateway.server.emit('test-emit1', 'test tset');
-    // await this.eventService.socket.emit('test-emit1', 'teset se');
-    console.log('check http://api/users/test');
-    this.eventEmitter.emit('event.listen', {
-      userId: req.user.id,
-      payload: 'yoo',
-    });
-    return { message: 'ok' };
   }
 
   @Get()

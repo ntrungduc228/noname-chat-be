@@ -18,6 +18,7 @@ export enum MessageType {
   timestamps: true,
 })
 export class Message {
+  _id: mongoose.Schema.Types.ObjectId;
   @Prop({
     type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
     default: [],
