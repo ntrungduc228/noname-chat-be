@@ -20,7 +20,12 @@ export class MessagesService {
       ...createMessageDto,
       sender,
     });
-    return (await createMessage.save()).populate({
+    const savedMessage = await createMessage.save();
+    await this.roomService.addMessageToRoom(
+      createMessageDto.room.toString(),
+      savedMessage._id.toString(),
+    );
+    return savedMessage.populate({
       path: 'sender',
       select: 'username avatar email',
     });
@@ -150,6 +155,7 @@ export class MessagesService {
         type,
         room: rooms.map((room) => room._id),
       })
-      .populate(populates);
+      .populate(populates)
+      .sort({ createdAt: -1 });
   }
 }

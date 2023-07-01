@@ -8,25 +8,25 @@ export class UserSubject implements IUserSubject {
   constructor(server: Server) {
     this.server = server;
   }
-  registerObserver(observer: UserObserver): void {
+  subscribe(observer: UserObserver): void {
     observer.receiveAllUsers([...this.users]);
-    this.server.emit('new-user-online', observer._id);
+    this.notifyUserOnline(observer);
     this.users.add(observer);
   }
-  removeObserver(observer: UserObserver): void {
+  unsubscribe(observer: UserObserver): void {
     this.users.delete(observer);
     let isExist = false;
     if (this.users.size) {
       isExist = [...this.users].some((user) => user._id === observer._id);
     }
     if (!isExist) {
-      this.server.emit('user-offline', observer._id);
+      this.notifyUserOffline(observer);
     }
   }
   removeObserverByClientId(clientId: string): void {
     const user = [...this.users].find((user) => user.client.id === clientId);
     if (user) {
-      this.removeObserver(user);
+      this.unsubscribe(user);
     }
   }
   findObserverById(id: string): UserObserver | undefined {
@@ -39,5 +39,11 @@ export class UserSubject implements IUserSubject {
         user.inComingCall(callId);
       }
     });
+  }
+  notifyUserOnline(observer: UserObserver): void {
+    this.users.forEach((user) => user.notifyUserOnline(observer));
+  }
+  notifyUserOffline(observer: UserObserver): void {
+    this.users.forEach((user) => user.notifyUserOffline(observer));
   }
 }

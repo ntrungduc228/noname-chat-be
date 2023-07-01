@@ -16,4 +16,11 @@ export class UserObserver {
   inComingCall(callId: string) {
     this.client.emit('incoming-call', callId);
   }
+
+  notifyUserOnline(user: UserObserver) {
+    this.client.emit('new-user-online', user._id);
+  }
+  notifyUserOffline(user: UserObserver) {
+    this.client.emit('user-offline', user._id);
+  }
 }
