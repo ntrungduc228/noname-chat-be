@@ -25,10 +25,6 @@ export class RoomsService {
     const { participants, isGroup } = createRoomDto;
 
     try {
-      // if (!participants) {
-      //   throw new HttpException('Participants are required', 400);
-      // }
-
       if (!participants.includes(creatorId)) {
         participants.unshift(creatorId);
       }
