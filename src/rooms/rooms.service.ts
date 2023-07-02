@@ -100,6 +100,7 @@ export class RoomsService {
 
   async findParticipantsByUserIdNotInRoom(userId: string, roomId: string) {
     const user = await this.userService.findOne(userId);
+    const room = await this.findOne(roomId);
     const rooms = await this.roomModel
       .find({
         participants: { $in: [userId] },
@@ -107,7 +108,7 @@ export class RoomsService {
         _id: { $ne: roomId },
       })
       .populate('participants', 'username avatar');
-    const participants = [];
+    let participants = [];
     if (!rooms.length) {
       return [];
     }
@@ -121,6 +122,13 @@ export class RoomsService {
       }
     });
 
+    participants = participants.filter(
+      (item: User) =>
+        !room.participants.some((itemRoom: User) => {
+          return itemRoom._id.toString() == item._id.toString();
+        }),
+    );
+
     return participants;
   }
 
@@ -130,6 +138,7 @@ export class RoomsService {
     roomId: string,
   ) {
     const user = await this.userService.findOne(userId);
+    const room = await this.findOne(roomId);
 
     const rooms = await this.roomModel.aggregate([
       {
@@ -168,7 +177,7 @@ export class RoomsService {
       },
     ]);
 
-    const participants = [];
+    let participants = [];
     if (!rooms.length) {
       return [];
     }
@@ -187,6 +196,13 @@ export class RoomsService {
         }
       }
     });
+
+    participants = participants.filter(
+      (item: User) =>
+        !room.participants.some((itemRoom: User) => {
+          return itemRoom._id.toString() == item._id.toString();
+        }),
+    );
 
     return participants;
     // return rooms;
