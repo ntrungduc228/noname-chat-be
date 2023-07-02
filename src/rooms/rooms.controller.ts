@@ -68,6 +68,30 @@ export class RoomsController {
     return { data };
   }
 
+  @Get(':id/participants')
+  @UseGuards(AccessTokenGuard)
+  async findParticipantsByUserIdNotInRoom(@Param('id') id: string, @Req() req) {
+    const { q } = req.query;
+    if (!id) {
+      return null;
+    }
+    let data;
+    if (!q) {
+      data = await this.roomsService.findParticipantsByUserIdNotInRoom(
+        req.user.id,
+        id,
+      );
+    } else {
+      data = await this.roomsService.findParticipantsByUsernameNotInRoom(
+        req.user.id,
+        q,
+        id,
+      );
+    }
+
+    return { data };
+  }
+
   @Get()
   @UseGuards(AccessTokenGuard)
   async getCursorPaginated(@Req() req) {
@@ -141,6 +165,23 @@ export class RoomsController {
       req.user.id,
       updateMembersDto,
     );
+
+    const dataReturn = {
+      admin: room.admin,
+      avatar: room.avatar,
+      name: room.name,
+      _id: room._id,
+      lastMessage: room.lastMessage,
+    };
+
+    room.participants.forEach((participant: User) => {
+      console.log('emit ', participant.username);
+      this.eventEmitter.emit('event.listen', {
+        userId: participant._id,
+        payload: dataReturn,
+        type: 'room.added',
+      });
+    });
 
     return { data: room };
   }
