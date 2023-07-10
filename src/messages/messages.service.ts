@@ -90,22 +90,41 @@ export class MessagesService {
     return await this.messageModel.findByIdAndDelete(id);
   }
 
-  async findByRoomId(roomId: string, page: number, limit: number) {
-    const resPerPage = Math.floor(limit) || 20;
-    const curPage = Math.floor(page) || 1;
-    const skip = resPerPage * (curPage - 1);
-    const TotalMessages = await this.messageModel.count({ room: roomId });
-    const nextCursor =
-      Math.ceil(TotalMessages / limit) === curPage ? undefined : curPage + 1;
+  async findByRoomId(
+    roomId: string,
+    cursor: string = new Date().toISOString(),
+    limit: number,
+  ): Promise<{
+    data: Message[];
+    nextCursor: Date | null;
+  }> {
+    // const resPerPage = Math.floor(limit) || 20;
+
+    // const skip = resPerPage * (curPage - 1);
+
+    //  Math.ceil(TotalMessages / limit) === curPage ? undefined : curPage + 1;
 
     const data = await this.messageModel
-      .find({ room: roomId })
+      .find({
+        room: roomId,
+        createdAt: {
+          $lt: cursor,
+        },
+      })
       .sort({ createdAt: -1 })
-      .limit(resPerPage)
-      .skip(skip)
+      .limit(limit)
       .populate('sender', 'avatar username');
-    return { data, nextCursor };
+
+    const nextCursor = data[data.length - 1].createdAt;
+    const hasNextPage = await this.messageModel.count({
+      room: roomId,
+      createdAt: {
+        $lt: nextCursor,
+      },
+    });
+    return { data, nextCursor: hasNextPage > 0 ? nextCursor : undefined };
   }
+
   async findByTypeAndParticipantId(
     type: MessageType,
     participantId: string,

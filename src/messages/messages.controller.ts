@@ -79,9 +79,9 @@ export class MessagesController {
   @Get(':roomId')
   async getAllMessage(
     @Param('roomId') roomId: string,
-    @Query() { page, limit }: PaginationMessageDto,
+    @Query() { cursor, limit }: PaginationMessageDto,
   ) {
-    console.log('r: ', roomId, 'page: ', page, 'limit: ', limit);
-    return await this.messagesService.findByRoomId(roomId, page, limit);
+    console.log('r: ', roomId, 'page: ', cursor, 'limit: ', limit);
+    return await this.messagesService.findByRoomId(roomId, cursor, limit);
   }
 }

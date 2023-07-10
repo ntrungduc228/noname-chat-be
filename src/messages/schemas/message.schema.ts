@@ -51,6 +51,8 @@ export class Message {
 
   @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'Call' })
   call: Call;
+  @Prop({ type: Date, default: Date.now })
+  createdAt: Date;
 }
 
 export const MessageSchema = SchemaFactory.createForClass(Message);

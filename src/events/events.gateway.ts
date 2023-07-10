@@ -171,7 +171,7 @@ export class EventsGateway
 
   @OnEvent('room.update')
   async updateRoom(room: Room) {
-    room.participants.forEach((participant) => {
+    room?.participants.forEach((participant) => {
       this.userSubject.users.forEach((user) => {
         if (user._id === participant._id.toString()) {
           user.client.emit('update-room', room);
