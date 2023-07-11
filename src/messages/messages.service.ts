@@ -98,12 +98,6 @@ export class MessagesService {
     data: Message[];
     nextCursor: Date | null;
   }> {
-    // const resPerPage = Math.floor(limit) || 20;
-
-    // const skip = resPerPage * (curPage - 1);
-
-    //  Math.ceil(TotalMessages / limit) === curPage ? undefined : curPage + 1;
-
     const data = await this.messageModel
       .find({
         room: roomId,

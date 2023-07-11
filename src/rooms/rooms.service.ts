@@ -573,4 +573,9 @@ export class RoomsService {
     );
     return deleteRoom;
   }
+  async checkUserIsInRoom(userId: string, roomId: string): Promise<boolean> {
+    return (await this.roomModel.findOne({ _id: roomId, participants: userId }))
+      ? true
+      : false;
+  }
 }
