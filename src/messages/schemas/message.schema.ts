@@ -53,6 +53,8 @@ export class Message {
   call: Call;
   @Prop({ type: Date, default: Date.now })
   createdAt: Date;
+  @Prop({ type: Boolean, default: false })
+  isDelete: boolean;
 }
 
 export const MessageSchema = SchemaFactory.createForClass(Message);

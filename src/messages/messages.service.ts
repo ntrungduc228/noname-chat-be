@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, ObjectId, PopulateOptions } from 'mongoose';
 import { CreateMessageDto } from './dto/create-message.dto';
@@ -86,8 +86,14 @@ export class MessagesService {
     ]);
   }
 
-  async remove(id: string) {
-    return await this.messageModel.findByIdAndDelete(id);
+  async remove(id: string, userId: string) {
+    const message = await this.messageModel.findOne({
+      _id: id,
+      sender: userId,
+    });
+    return message
+      ? await this.messageModel.findByIdAndUpdate(id, { isDelete: true })
+      : new HttpException('You cannot delete this message', 400);
   }
 
   async findByRoomId(
@@ -104,6 +110,7 @@ export class MessagesService {
         createdAt: {
           $lt: cursor,
         },
+        isDelete: false,
       })
       .sort({ createdAt: -1 })
       .limit(limit)

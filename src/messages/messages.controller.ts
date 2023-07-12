@@ -3,20 +3,20 @@ import {
   Controller,
   Delete,
   Get,
+  HttpException,
   Param,
   Post,
+  Query,
   Req,
   UseGuards,
-  Query,
 } from '@nestjs/common';
-import { HttpException } from '@nestjs/common';
-import { CreateMessage, CreateMessageDto } from './dto/create-message.dto';
-import { MessagesService } from './messages.service';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { AccessTokenGuard } from 'src/auth/guards';
-import { PaginationMessageDto } from './dto/pagination-message.dto';
-import { RoomsService } from 'src/rooms/rooms.service';
 import { CreateRoomDto } from 'src/rooms/dto/create-room.dto';
+import { RoomsService } from 'src/rooms/rooms.service';
+import { CreateMessage } from './dto/create-message.dto';
+import { PaginationMessageDto } from './dto/pagination-message.dto';
+import { MessagesService } from './messages.service';
 
 @Controller('messages')
 export class MessagesController {
@@ -61,8 +61,8 @@ export class MessagesController {
 
   @Delete(':id')
   @UseGuards(AccessTokenGuard)
-  async remove(@Param('id') id: string) {
-    const messageRemove = await this.messagesService.remove(id);
+  async remove(@Param('id') id: string, @Req() req) {
+    const messageRemove = await this.messagesService.remove(id, req.user.id);
     this.eventEmitter.emit('message.delete', messageRemove);
     return 'success';
   }
