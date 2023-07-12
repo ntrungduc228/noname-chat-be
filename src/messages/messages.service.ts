@@ -110,7 +110,7 @@ export class MessagesService {
         createdAt: {
           $lt: cursor,
         },
-        isDelete: false,
+       // isDelete: false,
       })
       .sort({ createdAt: -1 })
       .limit(limit)
