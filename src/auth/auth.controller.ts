@@ -23,12 +23,12 @@ export class AuthController {
     const { token, user } = await this.authService.googleLogin(req);
     if (user.status === UserStatus.BANNED) {
       return {
-        url: `http://localhost:3000/redirect?error=${encodeURIComponent(
+        url: `${process.env.CLIENT_URI}/redirect?error=${encodeURIComponent(
           'your account has been banned',
         )}`,
       };
     }
-    return { url: `http://localhost:3000/redirect?token=${token}` };
+    return { url: `${process.env.CLIENT_URI}/redirect?token=${token}` };
   }
 
   @Get('info')
