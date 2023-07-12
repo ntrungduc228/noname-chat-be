@@ -3,19 +3,20 @@ import {
   Controller,
   Delete,
   Get,
+  HttpException,
   Param,
   Post,
+  Query,
   Req,
   UseGuards,
-  Query,
 } from '@nestjs/common';
-import { CreateMessage, CreateMessageDto } from './dto/create-message.dto';
-import { MessagesService } from './messages.service';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { AccessTokenGuard } from 'src/auth/guards';
-import { PaginationMessageDto } from './dto/pagination-message.dto';
-import { RoomsService } from 'src/rooms/rooms.service';
 import { CreateRoomDto } from 'src/rooms/dto/create-room.dto';
+import { RoomsService } from 'src/rooms/rooms.service';
+import { CreateMessage } from './dto/create-message.dto';
+import { PaginationMessageDto } from './dto/pagination-message.dto';
+import { MessagesService } from './messages.service';
 
 @Controller('messages')
 export class MessagesController {
@@ -30,6 +31,13 @@ export class MessagesController {
   async create(@Body() createMessage: CreateMessage, @Req() req) {
     let newMessage;
     if (createMessage.isNotTemp) {
+      if (
+        !(await this.roomsService.checkUserIsInRoom(
+          req.user.id,
+          createMessage.message.room.toString(),
+        ))
+      )
+        throw new HttpException("can't create message", 400);
       newMessage = await this.messagesService.create(
         createMessage.message,
         req.user.id,
@@ -40,7 +48,7 @@ export class MessagesController {
         participants: [req.user.id, createMessage.message.room],
       };
       const room = await this.roomsService.create(roomCreate, req.user.id);
-      console.log('rooom', room);
+
       newMessage = await this.messagesService.create(
         { ...createMessage.message, room: room._id },
         req.user.id,
@@ -51,37 +59,24 @@ export class MessagesController {
     return newMessage;
   }
 
-  @Post('/test')
-  @UseGuards(AccessTokenGuard)
-  async testMessage(@Body() createMessageDto: CreateMessageDto, @Req() req) {
-    console.log('userid ', req.user.id);
-    // goi server message
-    this.eventEmitter.emit('message.new', {
-      userId: 'userId',
-      roomId: createMessageDto.room,
-      message: createMessageDto.content,
-    });
-
-    this.eventEmitter.emit('message.test', {
-      roomId: createMessageDto.room,
-      message: createMessageDto.content,
-    });
-    return { message: 'send message successfully' };
-  }
-
   @Delete(':id')
-  async remove(@Param('id') id: string) {
-    const messageRemove = await this.messagesService.remove(id);
+  @UseGuards(AccessTokenGuard)
+  async remove(@Param('id') id: string, @Req() req) {
+    const messageRemove = await this.messagesService.remove(id, req.user.id);
     this.eventEmitter.emit('message.delete', messageRemove);
     return 'success';
   }
 
   @Get(':roomId')
+  @UseGuards(AccessTokenGuard)
   async getAllMessage(
     @Param('roomId') roomId: string,
-    @Query() { page, limit }: PaginationMessageDto,
+    @Query() { cursor, limit }: PaginationMessageDto,
+    @Req() req,
   ) {
-    console.log('r: ', roomId, 'page: ', page, 'limit: ', limit);
-    return await this.messagesService.findByRoomId(roomId, page, limit);
+    if (await this.roomsService.checkUserIsInRoom(req.user.id, roomId)) {
+      return await this.messagesService.findByRoomId(roomId, cursor, limit);
+    }
+    throw new HttpException("can't get messages from this room", 400);
   }
 }

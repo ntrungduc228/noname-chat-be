@@ -1,8 +1,7 @@
 import { IsNotEmpty } from 'class-validator';
 
 export class PaginationMessageDto {
-  @IsNotEmpty()
-  page: number;
+  cursor: string;
   @IsNotEmpty()
   limit: number;
 }

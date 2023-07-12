@@ -547,11 +547,16 @@ export class RoomsService {
   }
 
   async checkRoom(id: string, participants: ObjectId[]): Promise<Room> {
-    let room = await this.roomModel.findById(id);
+    let room = await this.roomModel
+      .findById(id)
+      .populate('participants', 'avatar username');
     if (!room) {
-      room = await this.roomModel.findOne({
-        participants: participants,
-      });
+      room = await this.roomModel
+        .findOne({
+          participants: participants,
+          isGroup: false,
+        })
+        .populate('participants', 'avatar username');
     }
     return room;
   }
@@ -567,5 +572,10 @@ export class RoomsService {
       { new: true },
     );
     return deleteRoom;
+  }
+  async checkUserIsInRoom(userId: string, roomId: string): Promise<boolean> {
+    return (await this.roomModel.findOne({ _id: roomId, participants: userId }))
+      ? true
+      : false;
   }
 }

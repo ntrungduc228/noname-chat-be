@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, ObjectId, PopulateOptions } from 'mongoose';
 import { CreateMessageDto } from './dto/create-message.dto';
@@ -86,26 +86,46 @@ export class MessagesService {
     ]);
   }
 
-  async remove(id: string) {
-    return await this.messageModel.findByIdAndDelete(id);
+  async remove(id: string, userId: string) {
+    const message = await this.messageModel.findOne({
+      _id: id,
+      sender: userId,
+    });
+    return message
+      ? await this.messageModel.findByIdAndUpdate(id, { isDelete: true })
+      : new HttpException('You cannot delete this message', 400);
   }
 
-  async findByRoomId(roomId: string, page: number, limit: number) {
-    const resPerPage = Math.floor(limit) || 20;
-    const curPage = Math.floor(page) || 1;
-    const skip = resPerPage * (curPage - 1);
-    const TotalMessages = await this.messageModel.count({ room: roomId });
-    const nextCursor =
-      Math.ceil(TotalMessages / limit) === curPage ? undefined : curPage + 1;
-
+  async findByRoomId(
+    roomId: string,
+    cursor: string = new Date().toISOString(),
+    limit: number,
+  ): Promise<{
+    data: Message[];
+    nextCursor: Date | null;
+  }> {
     const data = await this.messageModel
-      .find({ room: roomId })
+      .find({
+        room: roomId,
+        createdAt: {
+          $lt: cursor,
+        },
+        isDelete: false,
+      })
       .sort({ createdAt: -1 })
-      .limit(resPerPage)
-      .skip(skip)
+      .limit(limit)
       .populate('sender', 'avatar username');
-    return { data, nextCursor };
+
+    const nextCursor = data[data.length - 1].createdAt;
+    const hasNextPage = await this.messageModel.count({
+      room: roomId,
+      createdAt: {
+        $lt: nextCursor,
+      },
+    });
+    return { data, nextCursor: hasNextPage > 0 ? nextCursor : undefined };
   }
+
   async findByTypeAndParticipantId(
     type: MessageType,
     participantId: string,
