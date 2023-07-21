@@ -32,14 +32,14 @@ jobs:
           npm run 
           npm test
         env: 
-         DB_URI: ${{secret.DB_URI}}
-         CLIENT_URI: ${{CLIENT_URI}}
-         GOOGLE_CLIENT_ID: ${{GOOGLE_CLIENT_ID}}
-         GOOGLE_SECRET: ${{GOOGLE_SECRET}}
-         SESSION_SECRET: ${{SESSION_SECRET}}
-         JWT_SECRET: ${{JWT_SECRET}}
-         JWT_LIFE: ${{JWT_LIFE}}
-         REFRESH_JWT_LIFE: ${{REFRESH_JWT_LIFE}} 
+         DB_URI: ${{secrets.DB_URI}}
+         CLIENT_URI: ${{secrets.CLIENT_URI}}
+         GOOGLE_CLIENT_ID: ${{secrets.GOOGLE_CLIENT_ID}}
+         GOOGLE_SECRET: ${{secrets.GOOGLE_SECRET}}
+         SESSION_SECRET: ${{secrets.SESSION_SECRET}}
+         JWT_SECRET: ${{secrets.JWT_SECRET}}
+         JWT_LIFE: ${{secrets.JWT_LIFE}}
+         REFRESH_JWT_LIFE: ${{secrets.REFRESH_JWT_LIFE}} 
 
 
   # Heavily modified deploy job to fit render.com
