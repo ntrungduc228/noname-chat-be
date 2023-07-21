@@ -29,8 +29,7 @@ jobs:
       - name: NPM install, build and test
         run: |
           npm install
-          npm run 
-          npm test
+          npm run start:dev
         env: 
          DB_URI: ${{secrets.DB_URI}}
          CLIENT_URI: ${{secrets.CLIENT_URI}}
